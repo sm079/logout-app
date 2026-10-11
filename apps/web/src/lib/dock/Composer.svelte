@@ -502,6 +502,7 @@
       rows="1"
       spellcheck="false"
       autocomplete="off"
+      maxlength="4000"
       aria-autocomplete="list"
       aria-controls="popList"
       aria-activedescendant={pop.open && pop.kind === 'suggest' ? `opt-${pop.idx}` : undefined}

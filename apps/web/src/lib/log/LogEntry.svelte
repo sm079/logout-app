@@ -181,8 +181,15 @@
     {#if editing}
       <div class="lfield">
         <div class="lmirror" bind:this={lm} aria-hidden="true"></div>
-        <textarea class="lta" rows="1" spellcheck="false" aria-label="Edit this {k.noun}" bind:this={ta} oninput={onInput} onkeydown={onKey}
-        ></textarea>
+        <textarea
+          class="lta"
+          rows="1"
+          maxlength="4000"
+          spellcheck="false"
+          aria-label="Edit this {k.noun}"
+          bind:this={ta}
+          oninput={onInput}
+          onkeydown={onKey}></textarea>
       </div>
       {#if overflow.length}
         <p class="ro-more" aria-hidden="true">

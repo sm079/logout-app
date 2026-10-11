@@ -8,6 +8,7 @@
   import Dock from '../dock/Dock.svelte';
   import Sheets from '../sheets/Sheets.svelte';
   import { app } from '../state/app.svelte.ts';
+  import { initAccount } from '../sync/account.svelte.ts';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
   import Tooltip from './Tooltip.svelte';
@@ -26,6 +27,7 @@
       .boot()
       .then(() => {
         if (app.firstRun) app.sheet = { kind: 'setup' };
+        void initAccount();
       })
       .catch((err: unknown) => {
         console.error(err);
