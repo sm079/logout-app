@@ -173,3 +173,33 @@ describe('two devices', () => {
     expect((await a.entries.get(e.id))!.dirty).toBe(1);
   });
 });
+
+describe('accounts and reading reports', () => {
+  test('deleting an account removes everything synced for it and nothing of anyone else', async () => {
+    await remoteFor(pg, alice).push({ entries: [wire(entry('oats 50g'))], aliases: [], settings: [], engine: 1 });
+    await remoteFor(pg, bob).push({ entries: [wire(entry('rice 100g'))], aliases: [], settings: [], engine: 1 });
+    await as(pg, alice, tx => tx.query('select public.delete_account()'));
+    const left = await pg.query<{ n: number }>('select count(*)::int as n from public.entries');
+    expect(left.rows[0]!.n).toBe(1);
+    expect((await pg.query('select id from auth.users where id = $1', [alice])).rows).toEqual([]);
+    await expect(as(pg, null, tx => tx.query('select public.delete_account()'))).rejects.toThrow();
+  });
+
+  test('unread lines can be sent by a signed-in user, but not read back or sent anonymously', async () => {
+    const row = { mode: 'food', kind: 'food', reason: 'bad', line: '‹name› 2 3', engine: 1 };
+    const insert = (uid: string | null) =>
+      as(pg, uid, tx =>
+        tx.query('insert into public.unread_lines (mode, kind, reason, line, engine) values ($1, $2, $3, $4, $5)', [
+          row.mode,
+          row.kind,
+          row.reason,
+          row.line,
+          row.engine
+        ])
+      );
+    await insert(alice);
+    await expect(insert(null)).rejects.toThrow();
+    await expect(as(pg, alice, tx => tx.query('select * from public.unread_lines'))).rejects.toThrow();
+    expect((await pg.query<{ n: number }>('select count(*)::int as n from public.unread_lines')).rows[0]!.n).toBe(1);
+  });
+});

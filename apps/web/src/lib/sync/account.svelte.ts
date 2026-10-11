@@ -11,6 +11,7 @@ import { report } from '../observe/errors.ts';
 import { app } from '../state/app.svelte.ts';
 import { clockNow, isoOf } from '../logic/dates.ts';
 import type { Remote } from './remote.ts';
+import { flushUnread } from './queue.ts';
 import { Syncer, type SyncResult } from './sync.ts';
 
 export type SyncStatus = 'idle' | 'syncing' | 'offline' | 'error';
@@ -140,6 +141,7 @@ export function runSync(): Promise<void> {
       try {
         const result = await syncer!.run();
         await applyPulled(result);
+        if (app.device.shareUnread) await sendUnread();
         account.status = 'idle';
         account.lastSync = Date.now();
         account.newerEngine = result.engine > ENGINE_VERSION;
@@ -153,6 +155,29 @@ export function runSync(): Promise<void> {
     running = null;
   })();
   return running;
+}
+
+/** Lines that failed to read go up with a sync, for users who share them; no account id goes with them */
+async function sendUnread() {
+  await flushUnread(async lines => {
+    const { error } = await sb!.from('unread_lines').insert(lines);
+    if (error) throw new Error(`Unread lines not sent: ${error.message}`);
+  }).catch(err => report(err, { where: 'unread' }));
+}
+
+/** Deletes the account and everything synced to it, then this device's log too */
+export async function deleteAccount(): Promise<void> {
+  if (!sb || !account.user) return;
+  const { error } = await sb.rpc('delete_account');
+  if (error) {
+    account.error = `Couldn't delete the account: ${error.message}`;
+    return;
+  }
+  await sb.auth.signOut({ scope: 'local' });
+  end();
+  db().close();
+  await db().delete();
+  location.reload();
 }
 
 /** Sync runs after changes here (once typing settles), when the network returns, when the app comes back to the

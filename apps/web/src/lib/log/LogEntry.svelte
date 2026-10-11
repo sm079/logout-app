@@ -16,6 +16,8 @@
   import { REDUCE, replay, roll, rollNum } from '../ui/motion.ts';
   import { placeReadouts, type Overflow } from '../ui/readouts.ts';
   import { track } from '../observe/analytics.ts';
+  import { queueUnread } from '../sync/queue.ts';
+  import { unreadLines } from '../sync/unread.ts';
   import { metaParts } from './meta.ts';
 
   let {
@@ -131,6 +133,7 @@
     onfinish();
     if (hadFocus) tick().then(() => li.querySelector<HTMLElement>('.ledit')?.focus({ preventScroll: true }));
     if (!changed && time === undefined) return;
+    if (app.device.shareUnread) void queueUnread(unreadLines(preview(app.book, text, e.mode, e.units).res, e.mode));
     await app.repo.edit(e.id, text, time);
     track('entry edited', { moved: time !== undefined, sample: e.sample });
     await app.engine.settled();

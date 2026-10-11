@@ -5,7 +5,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { app } from '../state/app.svelte.ts';
-  import { account, runSync, sendCode, signOut, useAnotherEmail, verifyCode } from '../sync/account.svelte.ts';
+  import { account, deleteAccount, runSync, sendCode, signOut, useAnotherEmail, verifyCode } from '../sync/account.svelte.ts';
   import Icon from '../ui/Icon.svelte';
   import { roll } from '../ui/motion.ts';
 
@@ -37,6 +37,23 @@
     armed = 'out';
     clearTimeout(armT);
     armT = setTimeout(() => (armed = null), 4000);
+  }
+
+  let doomed = $state(false);
+  let doomT: ReturnType<typeof setTimeout> | undefined;
+  /** Two taps within four seconds */
+  function del() {
+    if (doomed) {
+      clearTimeout(doomT);
+      void deleteAccount();
+      return;
+    }
+    doomed = true;
+    doomT = setTimeout(() => (doomed = false), 4000);
+  }
+  async function toggleShare() {
+    app.device = { ...app.device, shareUnread: !app.device.shareUnread };
+    await app.repo.saveDevice($state.snapshot(app.device));
   }
 
   onMount(() => {
@@ -74,6 +91,35 @@
             onclick={out}
           >
             <Icon name="logOut" /><span class="roll" use:roll={{ text: armed ? 'Confirm' : 'Sign out', dir: armed ? 1 : -1 }}></span>
+          </button>
+        </div>
+        <div class="su-row">
+          <span class="su-name" id="suShare"
+            >Help improve reading<span class="su-hint"
+              >Sends lines Logout couldn’t read, with item names and notes taken out, so it can learn to read them.</span
+            ></span
+          >
+          <button
+            type="button"
+            class="su-switch press"
+            role="switch"
+            aria-checked={app.device.shareUnread}
+            aria-labelledby="suShare"
+            onclick={toggleShare}
+          ></button>
+        </div>
+        <div class="su-row">
+          <span class="su-name"
+            >Delete account<span class="su-hint">Deletes your account and everything synced to it, and the log on this device.</span></span
+          >
+          <button
+            type="button"
+            class="lact ldel"
+            class:armed={doomed}
+            aria-label={doomed ? 'Tap again to delete your account' : 'Delete account'}
+            onclick={del}
+          >
+            <Icon name="trash" /><span class="roll" use:roll={{ text: doomed ? 'Confirm' : 'Delete', dir: doomed ? 1 : -1 }}></span>
           </button>
         </div>
       {:else if account.step === 'email' || account.step === 'sending'}
