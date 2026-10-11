@@ -10,8 +10,11 @@
   import { app } from '../state/app.svelte.ts';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
+  import DemoBar from './DemoBar.svelte';
   import Tooltip from './Tooltip.svelte';
   import UpdateBar from './UpdateBar.svelte';
+
+  let { demo = false }: { demo?: boolean } = $props();
 
   let screen = $state<HTMLElement>(),
     calEl = $state<HTMLElement>();
@@ -23,7 +26,7 @@
     sync();
     wide.addEventListener('change', sync);
     app
-      .boot()
+      .boot({ demo })
       .then(() => {
         if (app.firstRun) app.sheet = { kind: 'setup' };
       })
@@ -50,6 +53,7 @@
       <MetricPicker {screen} />
     {/if}
     <Sheets />
+    {#if app.demo}<DemoBar />{/if}
     <UpdateBar />
     <p class="vh" aria-live="polite">{app.announce}</p>
   </main>

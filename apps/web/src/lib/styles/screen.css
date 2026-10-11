@@ -318,3 +318,29 @@ html:has(.screen) body {
   font-size: 11px;
   color: var(--muted);
 }
+.demo-bar {
+  top: auto;
+  bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 150px);
+}
+.demo-bar a.lact {
+  text-decoration: none;
+}
+@media (min-width: 900px) {
+  .demo-bar {
+    left: calc((100% - clamp(360px, 34vw, 460px)) / 2);
+    bottom: 16px;
+  }
+}
+.demo-bar {
+  top: auto;
+  bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 150px);
+}
+.demo-bar a.lact {
+  text-decoration: none;
+}
+@media (min-width: 900px) {
+  .demo-bar {
+    left: calc((100% - clamp(360px, 34vw, 460px)) / 2);
+    bottom: 16px;
+  }
+}
