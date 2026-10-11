@@ -7,12 +7,16 @@
   import Calendar from '../calendar/Calendar.svelte';
   import Dock from '../dock/Dock.svelte';
   import Sheets from '../sheets/Sheets.svelte';
+  import { track } from '../observe/analytics.ts';
   import { app } from '../state/app.svelte.ts';
   import { initAccount } from '../sync/account.svelte.ts';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
+  import DemoBar from './DemoBar.svelte';
   import Tooltip from './Tooltip.svelte';
   import UpdateBar from './UpdateBar.svelte';
+
+  let { demo = false }: { demo?: boolean } = $props();
 
   let screen = $state<HTMLElement>(),
     calEl = $state<HTMLElement>();
@@ -24,10 +28,12 @@
     sync();
     wide.addEventListener('change', sync);
     app
-      .boot()
+      .boot({ demo })
       .then(() => {
         if (app.firstRun) app.sheet = { kind: 'setup' };
-        void initAccount();
+        // The demo is never synced
+        if (demo) track('demo opened');
+        else void initAccount();
       })
       .catch((err: unknown) => {
         console.error(err);
@@ -52,6 +58,7 @@
       <MetricPicker {screen} />
     {/if}
     <Sheets />
+    {#if app.demo}<DemoBar />{/if}
     <UpdateBar />
     <p class="vh" aria-live="polite">{app.announce}</p>
   </main>

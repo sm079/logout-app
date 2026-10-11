@@ -6,6 +6,8 @@ import { SUPABASE_KEY, SUPABASE_URL } from '$app/env/public';
 import { db } from '../data/db.ts';
 import { entryOf, load, onLocalChange } from '../data/repo.ts';
 import type { Profile, WidgetPicks } from '../data/types.ts';
+import { identify } from '../observe/analytics.ts';
+import { report } from '../observe/errors.ts';
 import { app } from '../state/app.svelte.ts';
 import { clockNow, isoOf } from '../logic/dates.ts';
 import type { Remote } from './remote.ts';
@@ -101,6 +103,7 @@ export async function signOut(force = false): Promise<'done' | 'unsynced'> {
 /* ---------- Keeping in step ---------- */
 async function begin(remote: Remote) {
   syncer = new Syncer(db(), remote);
+  identify(account.user?.id ?? null);
   // A device that was another account's starts its cursors over
   const known = (await db().local.get('account'))?.value;
   if (known && known !== account.user?.id) await db().local.where('key').startsWith('cursor:').delete();
@@ -110,6 +113,7 @@ async function begin(remote: Remote) {
   await runSync();
 }
 function end() {
+  identify(null);
   stopTriggers?.();
   stopTriggers = null;
   syncer = null;
@@ -142,6 +146,7 @@ export function runSync(): Promise<void> {
       } catch (err) {
         console.warn(err);
         account.status = navigator.onLine ? 'error' : 'offline';
+        if (navigator.onLine) report(err, { where: 'sync' });
         break;
       }
     } while (again && syncer);

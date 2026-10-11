@@ -1,5 +1,6 @@
 /* The page's side of the book: sends changes to the worker, keeps its newest read, asks it for entries */
 import type { BookCore, BookView, ViewEntry } from './core.ts';
+import { report } from '../observe/errors.ts';
 import { serve, type Change, type FromWorker, type Query, type ToWorker } from './protocol.ts';
 
 export interface Transport {
@@ -74,6 +75,7 @@ export class EngineClient {
       this.asks.delete(m.q);
     } else {
       this.error = m.message;
+      report(new Error(`Book worker: ${m.message.split(/\r?\n/)[0]}`), { stack: m.message });
       if (m.q != null) {
         this.asks.get(m.q)?.reject(new Error(m.message));
         this.asks.delete(m.q);

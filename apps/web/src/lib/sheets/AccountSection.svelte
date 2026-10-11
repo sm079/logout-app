@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { app } from '../state/app.svelte.ts';
   import { account, runSync, sendCode, signOut, useAnotherEmail, verifyCode } from '../sync/account.svelte.ts';
   import Icon from '../ui/Icon.svelte';
   import { roll } from '../ui/motion.ts';
@@ -44,7 +45,7 @@
   });
 </script>
 
-{#if account.configured}
+{#if account.configured && !app.demo}
   <div class="su-group" style="--d:250">
     <span class="su-label">Sync</span>
     <div class="su-rows">

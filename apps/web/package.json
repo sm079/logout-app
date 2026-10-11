@@ -18,8 +18,10 @@
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@logout/engine": "workspace:*",
     "@logout/sample": "workspace:*",
+    "@sentry/browser": "^11.6.0",
     "@supabase/supabase-js": "^2.117.3",
-    "dexie": "^4.4.6"
+    "dexie": "^4.4.6",
+    "posthog-js": "^1.438.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

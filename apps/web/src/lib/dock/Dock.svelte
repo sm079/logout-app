@@ -15,6 +15,7 @@
   import Toast from './Toast.svelte';
   import { commit, confirmLogged, readDraft } from './logging.ts';
   import { MODE_ORDER, MODES } from './modes.ts';
+  import { track } from '../observe/analytics.ts';
 
   let { calEl, el = $bindable() }: { calEl: HTMLElement | undefined; el?: HTMLElement } = $props();
 
@@ -92,6 +93,7 @@
     if (m === app.mode) return;
     app.dir = MODE_ORDER.indexOf(m) > MODE_ORDER.indexOf(app.mode) ? 1 : -1;
     app.mode = m;
+    track('mode switched', { mode: m });
     replay(btn, 'bounce');
     await tick();
     placeInd();
