@@ -1,0 +1,400 @@
+/* The site around the app: landing and privacy pages. Same surfaces and accent as the app, laid out as a page. */
+.s-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(60% 40% at 80% 0%, rgba(220, 248, 42, 0.07), transparent 70%), var(--page);
+  color: var(--fg);
+}
+.s-page a {
+  color: inherit;
+}
+.s-page main {
+  flex: 1;
+  width: min(1120px, 100% - 40px);
+  margin: 0 auto;
+}
+
+/* Header and footer */
+.s-head,
+.s-foot {
+  width: min(1120px, 100% - 40px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.s-head {
+  padding: 18px 0;
+}
+.s-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 750;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.s-brand img {
+  border-radius: 8px;
+}
+.s-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 14px;
+  font-weight: 550;
+}
+.s-nav a {
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+.s-nav a:hover {
+  color: var(--fg);
+}
+.s-foot {
+  padding: 40px 0 32px;
+  margin-top: 64px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.s-foot nav {
+  display: flex;
+  gap: 18px;
+}
+.s-foot a {
+  text-decoration: none;
+}
+.s-foot a:hover {
+  color: var(--fg);
+}
+
+/* Buttons: the lime one is the LOG button */
+.s-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 18px;
+  font-weight: 750;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: var(--lime-ink) !important;
+  background: linear-gradient(180deg, var(--lime-top), var(--lime) 50%, var(--lime-low));
+  box-shadow:
+    0 4px 0 var(--lime-edge),
+    0 14px 30px -10px var(--lime-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition:
+    transform 0.55s var(--spring),
+    box-shadow 0.55s var(--spring),
+    filter 0.2s;
+}
+.s-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+.s-cta:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--lime-edge),
+    0 6px 16px -8px var(--lime-shadow);
+  transition-duration: 0.08s;
+}
+.s-cta.alt {
+  color: var(--fg) !important;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  box-shadow: none;
+}
+.s-cta.alt:hover {
+  background: var(--card-hi);
+}
+.s-cta.small {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 13px;
+  font-size: 13.5px;
+  box-shadow: 0 3px 0 var(--lime-edge);
+}
+.s-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.s-ctas.center {
+  justify-content: center;
+}
+.s-small {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.s-small.center {
+  text-align: center;
+}
+
+/* Hero: the pitch, and the composer to try */
+.s-hero {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+  padding: 48px 0 24px;
+}
+@media (min-width: 960px) {
+  .s-hero {
+    grid-template-columns: 1fr minmax(0, 480px);
+    gap: 56px;
+    padding-top: 72px;
+  }
+}
+.s-kicker {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--lime-soft);
+  letter-spacing: 0.04em;
+}
+.s-hero h1 {
+  margin: 0;
+  font-size: clamp(36px, 6vw, 60px);
+  line-height: 1.02;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+.s-lede {
+  margin: 22px 0 0;
+  max-width: 34em;
+  font-size: 17px;
+  line-height: 1.55;
+  color: #c9cad0;
+}
+.s-lede code,
+.s-doc code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--chip);
+  color: var(--fg);
+}
+
+/* The composer to try */
+.s-try {
+  padding: 8px;
+  border-radius: 28px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.s-modes {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.s-modes button {
+  flex: 1;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.s-modes button:hover {
+  color: var(--fg);
+}
+.s-modes button[aria-selected='true'] {
+  color: var(--fg);
+  background: var(--chip-hi);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 4px 10px -2px rgba(0, 0, 0, 0.5);
+}
+.s-composer .field {
+  height: auto;
+  min-height: 46px;
+}
+.s-composer .field textarea {
+  overflow: hidden;
+}
+.s-try-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 4px 2px;
+}
+.s-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.s-examples button {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: var(--chip);
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.s-examples button:hover {
+  background: var(--chip-hi);
+  color: var(--fg);
+}
+.s-total {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--lime-soft);
+}
+
+/* Three points */
+.s-points {
+  display: grid;
+  gap: 16px;
+  padding: 56px 0;
+}
+@media (min-width: 760px) {
+  .s-points {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.s-points article {
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+}
+.s-points h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.s-points p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* The grammar, by example */
+.s-grammar > h2,
+.s-close h2 {
+  margin: 0 0 24px;
+  font-size: clamp(26px, 3.5vw, 36px);
+  letter-spacing: -0.035em;
+}
+.s-groups {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 760px) {
+  .s-groups {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.s-group {
+  padding: 6px;
+  border-radius: 24px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+}
+.s-group h3 {
+  margin: 10px 12px 4px;
+  font-size: 15px;
+}
+.s-group > p {
+  margin: 0 12px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.s-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.s-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.s-line:first-child {
+  border-top: 0;
+}
+.s-line code {
+  font: 400 15px/1.35 var(--sans);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.s-line > span {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Closing call */
+.s-close {
+  padding: 72px 0 0;
+  text-align: center;
+}
+.s-close p {
+  max-width: 36em;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* A plain document: privacy */
+.s-doc {
+  max-width: 680px !important;
+  padding: 40px 0;
+}
+.s-doc h1 {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: -0.04em;
+}
+.s-doc h2 {
+  margin: 36px 0 10px;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.s-doc p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: #c9cad0;
+}
