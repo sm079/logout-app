@@ -1,7 +1,9 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
+  import { registerServiceWorker } from '#lib/app/pwa.svelte.ts';
 
   let { children }: { children: Snippet } = $props();
+  onMount(registerServiceWorker);
 </script>
 
 {@render children()}

@@ -11,6 +11,7 @@
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
   import Tooltip from './Tooltip.svelte';
+  import UpdateBar from './UpdateBar.svelte';
 
   let screen = $state<HTMLElement>(),
     calEl = $state<HTMLElement>();
@@ -49,6 +50,7 @@
       <MetricPicker {screen} />
     {/if}
     <Sheets />
+    <UpdateBar />
     <p class="vh" aria-live="polite">{app.announce}</p>
   </main>
 {:else if failed}
