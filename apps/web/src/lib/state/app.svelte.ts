@@ -2,6 +2,7 @@
 import type { Mode, Preview, Units } from '@logout/engine';
 import { EngineClient, inlineTransport, workerTransport, type Transport } from '../engine/client.svelte.ts';
 import { SAMPLE_JOINED } from '../engine/sample-start.ts';
+import { LogoutDB, useDB } from '../data/db.ts';
 import { load, Repo } from '../data/repo.ts';
 import { DEFAULT_DEVICE, defaultProfile, type Aliases, type Device, type Profile, type WidgetPicks } from '../data/types.ts';
 import { addDays, clockNow, fromIso, isoOf, startOfDay } from '../logic/dates.ts';
@@ -46,6 +47,8 @@ class App {
   sheet = $state.raw<Sheet | null>(null);
   /** First run: no profile yet */
   firstRun = $state(false);
+  /** The demo: the sample history in a store of its own, never synced */
+  demo = $state(false);
   toastMsg = $state.raw<{ title: string; sub: string; n: number } | null>(null);
   hintMsg = $state.raw<{ el: HTMLElement; text: string; n: number } | null>(null);
   /** Said to screen readers */
@@ -78,10 +81,19 @@ class App {
   }
 
   /** Opens the store and starts the book */
-  async boot(transport?: Transport): Promise<void> {
+  async boot({ transport, demo = false }: { transport?: Transport; demo?: boolean } = {}): Promise<void> {
+    this.demo = demo;
+    if (demo) useDB(new LogoutDB('logout-demo'));
     const data = await load();
     this.engine = new EngineClient(transport ?? (typeof Worker === 'function' ? workerTransport() : inlineTransport()));
     this.repo = new Repo(this.engine);
+    if (demo && !data.device.setupDone) {
+      // The demo starts set up, with the sample on and enough of a profile for every widget
+      data.profile = { ...defaultProfile(isoOf(this.today)), sex: 'male', heightCm: 181 };
+      data.device = { ...data.device, sample: true, setupDone: true };
+      await this.repo.saveProfile(data.profile);
+      await this.repo.saveDevice(data.device);
+    }
     this.firstRun = !data.profile || !data.device.setupDone;
     if (data.profile)
       this.profile = {
