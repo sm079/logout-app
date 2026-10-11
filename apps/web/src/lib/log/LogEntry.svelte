@@ -15,6 +15,7 @@
   import type { IconName } from '../ui/icons.ts';
   import { REDUCE, replay, roll, rollNum } from '../ui/motion.ts';
   import { placeReadouts, type Overflow } from '../ui/readouts.ts';
+  import { track } from '../observe/analytics.ts';
   import { metaParts } from './meta.ts';
 
   let {
@@ -131,6 +132,7 @@
     if (hadFocus) tick().then(() => li.querySelector<HTMLElement>('.ledit')?.focus({ preventScroll: true }));
     if (!changed && time === undefined) return;
     await app.repo.edit(e.id, text, time);
+    track('entry edited', { moved: time !== undefined, sample: e.sample });
     await app.engine.settled();
     replay(li, 'saved');
     app.emit({ t: 'changed', date: e.date });

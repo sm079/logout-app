@@ -4,6 +4,7 @@ import type { ViewEntry } from '../engine/core.ts';
 import { app } from '../state/app.svelte.ts';
 import { clockNow, isoOf, monthDay } from '../logic/dates.ts';
 import { kindOf, sumParts, waterFmt } from '../logic/format.ts';
+import { track } from '../observe/analytics.ts';
 import { LOGGED } from './modes.ts';
 
 /** A draft read as it will be once logged: on the day LOG writes to, at its typed time or now */
@@ -23,6 +24,15 @@ export async function commit(text: string, mode: Mode, time: number): Promise<Vi
   await app.engine.settled();
   const e = await app.engine.entry(id);
   app.emit({ t: 'logged', id, date, before });
+  if (e)
+    track('entry logged', {
+      mode,
+      kind: kindOf(e),
+      lines: e.res.length,
+      unread: e.sum.needs,
+      past: date !== isoOf(app.today),
+      timed: time !== clockNow()
+    });
   return e;
 }
 
@@ -51,5 +61,8 @@ export function confirmLogged(e: ViewEntry, quick = false): void {
 /** Water and check-ins: a line logged in one tap, the same as if it had been typed */
 export async function quickLog(text: string): Promise<void> {
   const e = await commit(text, app.mode, clockNow());
-  if (e) confirmLogged(e, true);
+  if (e) {
+    confirmLogged(e, true);
+    track('quick logged', { kind: kindOf(e) });
+  }
 }

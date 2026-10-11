@@ -8,6 +8,7 @@
   import { app } from '../state/app.svelte.ts';
   import Icon from '../ui/Icon.svelte';
   import { roll } from '../ui/motion.ts';
+  import { track } from '../observe/analytics.ts';
 
   let file: HTMLInputElement;
   let pending = $state.raw<Imported | null>(null);
@@ -39,6 +40,7 @@
   }
   async function merge() {
     if (!pending) return;
+    track('data imported', { merged: true, entries: pending.entries.length });
     await importMerge(pending);
     location.reload();
   }
@@ -49,8 +51,13 @@
   <div class="su-rows">
     <div class="su-row">
       <span class="su-name">Export<span class="su-hint">Your entries, profile and widgets as one JSON file.</span></span>
-      <button type="button" class="lact" onclick={async () => downloadExport(await exportData())}
-        ><Icon name="download" /><span>Export</span></button
+      <button
+        type="button"
+        class="lact"
+        onclick={async () => {
+          downloadExport(await exportData());
+          track('data exported');
+        }}><Icon name="download" /><span>Export</span></button
       >
     </div>
     <div class="su-row" class:top={!!pending}>
@@ -63,7 +70,12 @@
             class="lact ldel"
             class:armed={armed === 'replace'}
             aria-label={armed === 'replace' ? 'Tap again to replace your entries' : 'Replace your entries with the file'}
-            onclick={() => pending && arm('replace', () => importReplace(pending!))}
+            onclick={() =>
+              pending &&
+              arm('replace', () => {
+                track('data imported', { merged: false, entries: pending!.entries.length });
+                return importReplace(pending!);
+              })}
           >
             <span class="roll" use:roll={{ text: armed === 'replace' ? 'Confirm' : 'Replace', dir: armed === 'replace' ? 1 : -1 }}></span>
           </button>
@@ -78,7 +90,16 @@
         >Clear entries<span class="su-hint">Deletes everything you've logged here, and names you've given items. Your profile stays.</span
         ></span
       >
-      <button type="button" class="lact ldel" class:armed={armed === 'clear'} onclick={() => arm('clear', clearEntries)}>
+      <button
+        type="button"
+        class="lact ldel"
+        class:armed={armed === 'clear'}
+        onclick={() =>
+          arm('clear', () => {
+            track('entries cleared');
+            return clearEntries();
+          })}
+      >
         <Icon name="trash" /><span
           class="roll"
           use:roll={{ text: armed === 'clear' ? 'Confirm' : 'Clear', dir: armed === 'clear' ? 1 : -1 }}
