@@ -1,6 +1,8 @@
 /* The installable, offline app: registers the service worker and says when a new version is ready.
    A new version only takes over when the user agrees, so an open log is never reloaded under them. */
 
+import { track } from '../observe/analytics.ts';
+
 export const pwa = $state<{ waiting: ServiceWorker | null }>({ waiting: null });
 
 let requested = false;
@@ -33,5 +35,6 @@ export function registerServiceWorker(): void {
 export function applyUpdate(): void {
   if (!pwa.waiting) return;
   requested = true;
+  track('app updated');
   pwa.waiting.postMessage({ type: 'skip-waiting' });
 }

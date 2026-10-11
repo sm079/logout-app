@@ -14,6 +14,7 @@
   import { itemTint, thumbStyle } from '../logic/palette.ts';
   import Icon from '../ui/Icon.svelte';
   import { MACROS } from '../widgets/compute.ts';
+  import { track } from '../observe/analytics.ts';
   import Sheet from './Sheet.svelte';
 
   let { kind, itemKey, leaving, onclose }: { kind: Mode; itemKey: string; leaving: boolean; onclose: (focus?: boolean) => void } = $props();
@@ -103,6 +104,7 @@
       // The new name stands on its own, even if it was once merged into another
       if (to !== key && app.aliases[`${kind}:${to}`]) app.aliases = await app.repo.setAlias(`${kind}:${to}`, null);
       app.aliases = await app.repo.setAlias(`${kind}:${key}`, n);
+      track('item renamed', { kind, merged: plan.ok === 'MERGE' });
       void renamed();
     }
     onclose(true);

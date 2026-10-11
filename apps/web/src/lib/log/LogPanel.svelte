@@ -11,6 +11,7 @@
   import { nf } from '../logic/format.ts';
   import Icon from '../ui/Icon.svelte';
   import { REDUCE, replay, roll } from '../ui/motion.ts';
+  import { track } from '../observe/analytics.ts';
   import LogEntry from './LogEntry.svelte';
 
   let { open }: { open: boolean } = $props();
@@ -242,6 +243,7 @@
     near?.querySelector<HTMLElement>('.ledit')?.focus({ preventScroll: true });
     await collapse(lastOfDay ? (li.closest('.lday') as HTMLElement) : li);
     await app.repo.remove(e.id);
+    track('entry deleted', { sample: e.sample });
     await app.engine.settled();
     app.emit({ t: 'changed', date: e.date });
     app.announce = 'Deleted';

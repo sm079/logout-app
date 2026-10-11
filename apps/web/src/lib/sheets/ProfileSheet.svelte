@@ -8,6 +8,7 @@
   import Icon from '../ui/Icon.svelte';
   import DataSection from './DataSection.svelte';
   import ProfileForm from './ProfileForm.svelte';
+  import { track } from '../observe/analytics.ts';
   import Sheet from './Sheet.svelte';
   import type { ProfileValues } from './profile.ts';
 
@@ -36,6 +37,14 @@
     if (v.sample !== app.device.sample) await app.repo.setSample(v.sample, device);
     else await app.repo.saveDevice(device);
     app.device = { ...device, sample: v.sample };
+    if (setup)
+      track('setup finished', {
+        sample: v.sample,
+        sex: !!v.sex,
+        height: !!v.heightCm,
+        lb: v.units.load === 'lb',
+        mi: v.units.dist === 'mi'
+      });
     app.firstRun = false;
     onclose();
   }
@@ -45,6 +54,7 @@
       app.device = { ...app.device, setupDone: true };
       await app.repo.saveDevice($state.snapshot(app.device));
       app.firstRun = false;
+      track('setup skipped');
     }
     onclose();
   }

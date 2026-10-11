@@ -6,6 +6,7 @@
   import { MTINT } from '../logic/palette.ts';
   import Icon from '../ui/Icon.svelte';
   import { REDUCE, replay } from '../ui/motion.ts';
+  import { track } from '../observe/analytics.ts';
   import { closePicker, picker, type ChartType } from './picker.svelte.ts';
 
   let { screen }: { screen: HTMLElement } = $props();
@@ -87,6 +88,7 @@
     chip.focus({ preventScroll: true });
     if (key === t.metric) return;
     app.widgets[id] = key;
+    track('widget changed', { widget: id, metric: key });
     void app.repo.saveWidgets($state.snapshot(app.widgets));
   }
   function onkey(e: KeyboardEvent) {
