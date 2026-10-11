@@ -12,6 +12,7 @@ A fitness log you type into. Pick Strength, Cardio or Food, write what you did t
 
 | Path              | What it is                                                                       |
 | ----------------- | -------------------------------------------------------------------------------- |
+| `apps/web`        | `@logout/web`: the SvelteKit site and the app at `/app`, a client-only PWA.      |
 | `packages/engine` | `@logout/engine`: the log engine. Pure TypeScript with no DOM, storage or clock. |
 | `packages/sample` | `@logout/sample`: a seeded sample history for demos. It is never synced.         |
 
@@ -21,6 +22,7 @@ Requires Node 22.17+ (see `.nvmrc`) and pnpm 11.
 
 ```sh
 pnpm install
+pnpm dev      # the web app at http://localhost:5173/app
 pnpm test     # every package's tests
 pnpm check    # type checks
 pnpm lint     # eslint + prettier
@@ -36,3 +38,16 @@ reads every entry in two passes, oldest first:
 
 `packages/engine/test/engine.test.ts` is the grammar, by example. `parity.test.ts` checks the engine against the
 original reference implementation (`test/legacy/`) over the full sample history, day by day.
+
+## The app
+
+`apps/web` is SvelteKit with the static adapter. Marketing pages are prerendered; `/app` runs only in the browser.
+
+- **Store:** IndexedDB through Dexie (`src/lib/data`). Only typed entries, item aliases and a few settings are kept.
+  Changes carry an `updatedAt` and a `dirty` flag, and removals stay as marks until they've synced.
+- **Book:** the engine runs in a Web Worker (`src/lib/engine`). The page sends changes and keeps the newest read
+  (cards, day totals, recovery, body fat); log rows ask the worker for their days' entries.
+- **Screens:** `calendar`, `widgets`, `dock` (composer, day so far, LOG), `log` and `sheets`, sharing state through
+  `src/lib/state/app.svelte.ts`. Pure logic lives in `src/lib/logic` and is unit-tested in `apps/web/test`.
+- **Offline:** a service worker caches the build, so the app opens without a network. A new version waits until
+  the user reloads into it.

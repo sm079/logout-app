@@ -1,0 +1,369 @@
+/* ---------- First-run setup: one screen over the app, built from the same surfaces ---------- */
+.setup {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 4px) 8px max(8px, env(safe-area-inset-bottom, 0px));
+  background: var(--screen);
+  animation: suIn 0.5s var(--ease-out) backwards;
+}
+.setup.out {
+  animation: suOut 0.4s var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes suIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes suOut {
+  to {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+.su-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent);
+}
+.su-scroll::-webkit-scrollbar {
+  display: none;
+}
+.su-scroll > * {
+  flex: none;
+  animation: rise 0.7s var(--spring-soft) backwards;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+.su-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px 8px;
+}
+.su-head .thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  flex: none;
+}
+.su-head .thumb .i {
+  width: 20px;
+  height: 20px;
+}
+.su-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.su-sub {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.su-group {
+  padding: 6px;
+  border-radius: 24px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+}
+.su-label {
+  display: block;
+  padding: 3px 8px 7px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.su-rows {
+  padding: 0 12px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.su-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+.su-row:first-child {
+  border-top: 0;
+}
+.su-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.su-hint {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.su-seg {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 13px;
+  background: var(--chip);
+}
+.su-seg button {
+  min-width: 50px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.3s;
+}
+.su-seg button:hover {
+  color: var(--fg);
+}
+.su-seg button[aria-checked='true'] {
+  color: var(--fg);
+  background: var(--chip-hi);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 4px 10px -2px rgba(0, 0, 0, 0.5);
+}
+.su-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.su-num[hidden] {
+  display: none;
+}
+.su-num input {
+  width: 78px;
+  height: 32px;
+  padding: 0 10px;
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--chip);
+  color: var(--fg);
+  outline: 0;
+  font: 600 14px var(--sans);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.3s;
+}
+.su-num input::-webkit-inner-spin-button,
+.su-num input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.su-num input::placeholder {
+  color: var(--dim);
+}
+.su-num input:focus {
+  border-color: var(--lime-line);
+  box-shadow: 0 0 0 3px var(--lime-ring);
+}
+.su-num input[aria-invalid='true'] {
+  border-color: color-mix(in srgb, var(--bad) 60%, transparent);
+}
+.su-num input.short {
+  width: 48px;
+}
+.su-num small {
+  min-width: 26px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.su-switch {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--chip-hi);
+  transition: background-color 0.25s;
+}
+.su-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 0.45s var(--spring),
+    background-color 0.25s;
+}
+.su-switch[aria-checked='true'] {
+  background: var(--lime);
+}
+.su-switch[aria-checked='true']::after {
+  transform: translateX(18px);
+  background: var(--lime-ink);
+}
+.su-actions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  height: 56px;
+  padding-bottom: 3px;
+}
+.su-skip {
+  flex: none;
+  width: 92px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.su-skip:hover {
+  color: var(--fg);
+  background: var(--card-hi);
+}
+.su-actions .shake {
+  animation: shake 0.5s var(--ease-out);
+}
+/* On a wide screen a sheet keeps to a readable column */
+@media (min-width: 600px) {
+  .setup {
+    padding-inline: max(8px, calc((100% - 520px) / 2));
+  }
+}
+.su-row .lact {
+  flex: none;
+}
+.su-row.top {
+  align-items: flex-start;
+  padding: 11px 0;
+}
+.su-row.top .lact {
+  margin-top: -3px;
+}
+.su-name small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.su-line {
+  display: block;
+  margin-top: 7px;
+  font: 400 14px/1.35 var(--sans);
+  letter-spacing: -0.01em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.su-line + .su-hint {
+  margin-top: 4px;
+}
+.su-text {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--chip);
+  color: var(--fg);
+  font: 600 15px var(--sans);
+  letter-spacing: -0.01em;
+  outline: 0;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.3s;
+}
+.su-text:focus {
+  border-color: var(--lime-line);
+  box-shadow: 0 0 0 3px var(--lime-ring);
+}
+.su-row.su-wrap {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 0;
+}
+.su-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.su-pills .lact small {
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 2px;
+}
+.su-pills .lact .i {
+  width: 12px;
+  height: 12px;
+  color: var(--muted);
+}
+.su-note {
+  margin: 0;
+  padding: 0 0 11px;
+}
+.su-note:empty {
+  display: none;
+}
+/* An item's name in a log row opens it */
+.ltext [data-item] {
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+.ltext [data-item]:hover {
+  background: var(--chip);
+  box-shadow: 0 0 0 3px var(--chip);
+}
+.ltext [data-item]:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.su-hint.bad {
+  color: var(--bad);
+}
+.su-pair {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+/* The title takes focus when a sheet opens, for screen readers; it needs no ring */
+.su-title:focus {
+  outline: none;
+}

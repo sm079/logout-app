@@ -1,0 +1,906 @@
+/* ---------- Widgets: a 6 × 2 grid, paged two columns at a time ---------- */
+@property --mc {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dcf82a;
+}
+/* Rows keep a usable height on short screens; the canvas scrolls rather than squeezing them */
+.canvas {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  container-type: size;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-y: contain;
+}
+.canvas::-webkit-scrollbar {
+  display: none;
+}
+.wscroll {
+  --cw: calc((100cqw - 24px) / 2);
+  --ch: max(168px, calc((100cqh - 24px) / 2));
+  flex: none;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 8px 0;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 8px;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+.wscroll::-webkit-scrollbar {
+  display: none;
+}
+.wscroll.dragging {
+  scroll-snap-type: none;
+  cursor: grabbing;
+}
+.wscroll.dragging * {
+  pointer-events: none;
+}
+.wscroll.locked {
+  overflow-x: hidden;
+}
+.wgrid {
+  flex: none;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: var(--cw) var(--cw) 0px var(--cw) var(--cw) 0px var(--cw) var(--cw);
+  grid-template-rows: var(--ch) var(--ch);
+}
+.wsnap {
+  grid-row: 1 / 3;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  pointer-events: none;
+}
+@container (min-width: 760px) {
+  .wscroll {
+    --cw: calc((100cqw - 48px) / 4);
+    --ch: max(168px, min(calc((100cqh - 24px) / 2), 340px));
+  }
+}
+@container (min-width: 1200px) {
+  .wscroll {
+    --cw: calc((100cqw - 72px) / 6);
+  }
+}
+
+/* A widget is built like the composer dock: an outer surface, a chip, and a raised panel (radii 22 → 15/16) */
+.widget {
+  --mc: var(--lime);
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 22px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.8);
+  transition: --mc 0.6s var(--ease-out);
+}
+.wenter {
+  animation: wIn 0.85s var(--spring-soft) backwards;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+@keyframes wIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+.wtop {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.wchip {
+  flex: none;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 15px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.wchip.wide {
+  flex: none;
+  width: 100%;
+}
+button.wchip:hover {
+  background: var(--card-hi);
+}
+.wchip.open {
+  border-color: var(--lime-line);
+  background: var(--card-hi);
+}
+.wchip-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.wchip .chev {
+  color: var(--muted);
+  transition:
+    transform 0.45s var(--spring-soft),
+    color 0.2s;
+}
+.wchip .chev .i {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
+}
+.wchip.open .chev {
+  transform: rotate(180deg);
+  color: var(--fg);
+}
+.wstat {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-right: 8px;
+}
+.wbody {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.wvalue {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.wnum {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.stat-body .wnum {
+  font-size: 26px;
+}
+.wunit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.wmeta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.arrow {
+  display: none;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+.arrow.up {
+  display: block;
+  border-bottom: 5px solid currentColor;
+}
+.arrow.down {
+  display: block;
+  border-top: 5px solid currentColor;
+}
+.arrow.good {
+  color: var(--good);
+}
+.arrow.bad {
+  color: var(--bad);
+}
+.widget.scrub .arrow {
+  display: none;
+}
+.widget.scrub .wmeta {
+  color: var(--fg);
+}
+
+/* Charts */
+.plot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  outline: none;
+  touch-action: pan-x;
+  cursor: crosshair;
+}
+.plot:focus-visible {
+  box-shadow: 0 0 0 2px var(--lime-line);
+}
+.plot svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.lgrid line {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.lgrid text,
+.lxl text {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--muted);
+}
+.lgrid.fadein {
+  animation: fadeIn 0.45s var(--ease-out);
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+/* The line glows in its own colour, like the recovery ring */
+.lline {
+  fill: none;
+  stroke: var(--mc);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--mc) 45%, transparent));
+}
+.lfocus stop {
+  transition: stop-opacity 0.3s var(--ease-out);
+}
+.lspan {
+  fill: color-mix(in srgb, var(--mc) 10%, transparent);
+  transition: opacity 0.3s;
+}
+.lend,
+.lhot {
+  fill: var(--mc);
+  stroke: var(--card);
+  stroke-width: 2;
+  transition: opacity 0.2s;
+}
+.lend.pop {
+  animation: endPop 0.55s var(--spring-soft) backwards;
+  animation-delay: 0.75s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes endPop {
+  from {
+    transform: scale(0);
+  }
+}
+.lhalo {
+  fill: var(--mc);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+.lhalo.on {
+  animation: halo 2.4s var(--ease-out) 1s infinite;
+}
+@keyframes halo {
+  0% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+.lxh {
+  stroke: var(--muted);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.lxh,
+.lhot {
+  opacity: 0;
+}
+.plot.scrubbing .lxh,
+.plot.scrubbing .lhot {
+  opacity: 1;
+}
+.plot.scrubbing .lend,
+.plot.scrubbing .lhalo {
+  opacity: 0;
+  animation: none;
+}
+.spark {
+  cursor: default;
+}
+.spark .lline {
+  stroke-width: 1.75;
+  filter: drop-shadow(0 1px 4px color-mix(in srgb, var(--mc) 35%, transparent));
+}
+
+.bwrap {
+  position: absolute;
+  left: 0;
+  right: 30px;
+  top: 6px;
+  bottom: 16px;
+}
+.bslots {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+}
+/* Every slot keeps a faint track, so empty and upcoming periods still hold their place in the chart.
+   Bars fill their slot: the gap between them is a share of the slot (2–10px) and the corner radius follows the bar's width. */
+.bslot {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  container-type: inline-size;
+  --bw: calc(100% - clamp(2px, 22%, 10px));
+  --br: clamp(2px, 14cqw, 6px);
+}
+.bslot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--bw);
+  border-radius: var(--br) var(--br) 0 0;
+  background: color-mix(in srgb, var(--mc) 7%, transparent);
+  transform-origin: 50% 100%;
+  transition: background-color 0.25s;
+}
+.bslot.none::before {
+  display: none;
+}
+.bslot.hot::before {
+  background: color-mix(in srgb, var(--mc) 14%, transparent);
+}
+.bslots.in .bslot::before {
+  animation: trackIn 0.6s var(--ease-out) backwards;
+  animation-delay: calc(var(--k) * var(--lag, 20ms));
+}
+@keyframes trackIn {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+.bar {
+  position: relative;
+  width: var(--bw);
+  height: 0;
+  border-radius: var(--br) var(--br) 0 0;
+  background: var(--mc);
+  transition:
+    height 0.6s var(--spring-soft),
+    opacity 0.25s,
+    filter 0.2s;
+}
+.bar.low {
+  opacity: 0.42;
+}
+.bar.dim {
+  opacity: 0.3;
+}
+.bar.fut,
+.bar.none {
+  opacity: 0;
+}
+.bar.live {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    filter: brightness(1.35) saturate(1.1);
+  }
+}
+.bar.hot {
+  opacity: 1;
+  filter: brightness(1.15);
+  animation: none;
+}
+.bgoal {
+  position: absolute;
+  left: 0;
+  right: -30px;
+  height: 0;
+  border-top: 1px solid var(--line-strong);
+  transition: bottom 0.6s var(--spring-soft);
+}
+.bgoal span {
+  position: absolute;
+  right: 0;
+  top: -5px;
+  padding-left: 5px;
+  background: var(--card);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 1;
+}
+.bgoal.none {
+  opacity: 0;
+}
+.bticks {
+  position: absolute;
+  left: 0;
+  right: 30px;
+  bottom: 0;
+  height: 12px;
+  display: flex;
+}
+.bticks span {
+  flex: 1;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color 0.25s;
+}
+.bticks span.on {
+  color: var(--fg);
+}
+
+.heat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.hbox {
+  position: relative;
+  padding-top: 14px;
+}
+.hmonths span {
+  position: absolute;
+  top: 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hgrid {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cs));
+  grid-auto-columns: var(--cs);
+  grid-auto-flow: column;
+  gap: var(--g);
+}
+.hc {
+  border-radius: max(1.5px, calc(var(--cs) * 0.26));
+  background: var(--chip);
+  transition:
+    opacity 0.3s,
+    background-color 0.35s;
+}
+.hc.l1,
+.legend i.h1 {
+  background: color-mix(in srgb, var(--mc) 26%, var(--chip));
+}
+.hc.l2,
+.legend i.h2 {
+  background: color-mix(in srgb, var(--mc) 50%, var(--chip));
+}
+.hc.l3,
+.legend i.h3 {
+  background: color-mix(in srgb, var(--mc) 76%, var(--chip));
+}
+.hc.l4,
+.legend i.h4 {
+  background: var(--mc);
+}
+.hc.out {
+  opacity: 0.28;
+}
+.hc.none {
+  visibility: hidden;
+}
+.hc.sel {
+  box-shadow: 0 0 0 1.5px var(--mc);
+}
+.hc.live {
+  animation: cellLive 2.4s ease-in-out infinite;
+}
+@keyframes cellLive {
+  50% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--mc) 55%, transparent);
+  }
+}
+.hc.hot {
+  opacity: 1;
+  box-shadow: 0 0 0 1.5px var(--fg);
+  animation: none;
+}
+.heat.in .hc {
+  animation: hcIn 0.5s var(--ease-out) backwards;
+  animation-delay: calc(var(--c) * 12ms);
+}
+@keyframes hcIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+/* The key leads the month row, under the metric chip; month labels pick up after it */
+.legend {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.heat.in .legend,
+.heat.in .hmonths {
+  animation: fadeIn 0.5s var(--ease-out) backwards;
+}
+.legend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--chip);
+}
+.legend i:first-of-type {
+  margin-left: 2px;
+}
+.legend i:last-of-type {
+  margin-right: 2px;
+}
+
+/* Recovery */
+[data-s='good'] {
+  --sc: var(--lime);
+}
+[data-s='warn'] {
+  --sc: var(--warn);
+}
+[data-s='bad'] {
+  --sc: var(--bad);
+}
+.rec-body {
+  justify-content: space-between;
+  padding-top: 16px;
+}
+.ring-wrap {
+  position: relative;
+  width: min(122px, 100%);
+  aspect-ratio: 1;
+  align-self: center;
+}
+.ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  display: block;
+  overflow: visible;
+}
+.ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+.ring-track {
+  stroke: var(--chip);
+}
+.ring-arc {
+  stroke: var(--sc, var(--lime));
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sc, var(--lime)) 40%, transparent));
+  transition:
+    stroke-dashoffset 1.1s var(--ease-out),
+    stroke 0.4s;
+}
+.ring-c {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.ring-num {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.ring-num small {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 1px;
+}
+.ring-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.rrows {
+  display: flex;
+  flex-direction: column;
+}
+.rrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.rrow:last-child {
+  padding-bottom: 0;
+}
+.rrow > span {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.rrow b {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.rrow small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Fuel: a calories ring split into macro segments, sized to the panel's height like the recovery ring, with the macro rows beside it */
+.fuel-body {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  container-type: size;
+}
+.fring {
+  position: relative;
+  flex: none;
+  width: min(100cqh, 124px);
+  aspect-ratio: 1;
+}
+.f-seg {
+  stroke: var(--c);
+  stroke-linecap: round;
+  opacity: 0;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 35%, transparent));
+  transition:
+    stroke-dasharray 1s var(--ease-out),
+    stroke-dashoffset 1s var(--ease-out),
+    opacity 0.3s;
+}
+.g-pct {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.g-sub {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--muted);
+}
+.mrows {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+.mrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 7px;
+  align-items: baseline;
+}
+.mname {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.mname::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--c);
+}
+.mbar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--chip);
+  overflow: hidden;
+}
+.mbar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: var(--c);
+  transition: width 1s var(--ease-out);
+  transition-delay: calc(var(--k) * 70ms);
+}
+.mval {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mval b {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.mval small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.stat-body {
+  gap: 6px;
+}
+/* A metric with nothing logged says what to type in place of its chart */
+.wempty {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.widget.empty .plot {
+  display: none;
+}
+.widget.empty .wempty {
+  display: flex;
+}
+.wex {
+  font: 500 13px/1.3 var(--sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  padding: 5px 9px;
+  border-radius: 9px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+}
+.stat-body .wempty {
+  align-items: flex-start;
+  justify-content: flex-end;
+  text-align: left;
+}
+/* A card has room for the hint alone */
+.widget.empty .stat-body .wvalue,
+.widget.empty .stat-body .wmeta {
+  display: none;
+}
+.w-recovery.none .ring-num small {
+  display: none;
+}
+.stat-body .spark {
+  flex: 1;
+  min-height: 28px;
+  margin: 2px -4px -2px;
+}
+
+/* Metric picker: the mention popover's look, anchored to a widget chip */
+.mpick {
+  position: absolute;
+  z-index: 12;
+  width: 256px;
+  padding: 6px;
+  border-radius: 20px;
+  background: var(--pop);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.75);
+}
+.mpick.in {
+  animation: popIn 0.45s var(--spring-soft) backwards;
+}
+.mpick.out {
+  animation: popOut 0.16s var(--ease-out) forwards;
+}
+.mpick ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 228px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  outline: none;
+}
+.mpick ul::-webkit-scrollbar {
+  display: none;
+}
+.mpick.stagger .opt {
+  animation: rise 0.45s var(--spring-soft) backwards;
+  animation-delay: calc(var(--k) * 22ms + 40ms);
+}
+.opt-thumb .i {
+  width: 16px;
+  height: 16px;
+}
+.opt-check {
+  margin-left: auto;
+  color: var(--lime);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.2s,
+    transform 0.35s var(--spring-soft);
+}
+.opt-check .i {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.4;
+}
+.opt[data-cur] .opt-check {
+  opacity: 1;
+  transform: none;
+}

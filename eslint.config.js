@@ -30,6 +30,17 @@ export default ts.config(
     languageOptions: { parserOptions: { parser: ts.parser, extraFileExtensions: ['.svelte'] } }
   },
   {
+    files: ['**/*.svelte', '**/*.svelte.ts'],
+    rules: {
+      // Every {@html} renders text through markup(), which escapes it, or a fixed icon path
+      'svelte/no-at-html-tags': 'off',
+      // Maps, Sets and URLs here are working values, not state the page reacts to
+      'svelte/prefer-svelte-reactivity': 'off',
+      // svelte-check decides which compiler warnings need ignoring
+      'svelte/no-unused-svelte-ignore': 'off'
+    }
+  },
+  {
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-non-null-assertion': 'off',

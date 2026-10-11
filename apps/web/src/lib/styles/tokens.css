@@ -1,0 +1,105 @@
+@property --ml {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --mr {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 26px;
+}
+/* One dark look by choice. Surfaces step up from the page to chips; lime is the one accent. */
+:root {
+  --page: #0b0c0d;
+  --screen: #0f1012;
+  --dock: #1b1c1f;
+  --card: #242528;
+  --card-hi: #2a2b2f;
+  --chip: #2f3034;
+  --chip-hi: #3a3b40;
+  --pop: #232427;
+  --toast: #26272b;
+  --tip: #3a3b40;
+  --line: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.1);
+  --fg: #eeeef0;
+  --muted: #8b8c93;
+  --dim: #55565c;
+  --lime: #dcf82a;
+  --lime-top: #effe5c;
+  --lime-low: #c6ec10;
+  --lime-edge: #7c9605;
+  --lime-ink: #161a02;
+  --lime-soft: #ebfa94;
+  --lime-tint: rgba(220, 248, 42, 0.14);
+  --lime-line: rgba(220, 248, 42, 0.3);
+  --lime-ring: rgba(220, 248, 42, 0.07);
+  --lime-glow: rgba(220, 248, 42, 0.1);
+  --lime-shadow: rgba(212, 245, 35, 0.45);
+  --lime-press: rgba(22, 26, 2, 0.09);
+  --good: #dcf82a;
+  --warn: #ffb35c;
+  --bad: #ff8a8f;
+  --heat1: rgba(220, 248, 42, 0.24);
+  --heat2: rgba(220, 248, 42, 0.46);
+  --heat3: rgba(220, 248, 42, 0.72);
+  --heat4: #dcf82a;
+  /* Macro series, validated for the dark surface (lightness band, CVD separation, contrast) */
+  --m-p: #7f9e0e;
+  --m-c: #5b8ff0;
+  --m-f: #d06a22;
+
+  --sans: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-soft: cubic-bezier(0.22, 1.25, 0.36, 1);
+  color-scheme: dark;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(
+      0,
+      0.009,
+      0.035 2.1%,
+      0.141,
+      0.281 6.7%,
+      0.723 12.9%,
+      0.938 16.7%,
+      1.017,
+      1.077,
+      1.121,
+      1.149 24.3%,
+      1.159,
+      1.163,
+      1.161,
+      1.154 29.9%,
+      1.129 32.8%,
+      1.051 39.6%,
+      1.017 43.1%,
+      0.991,
+      0.977 51%,
+      0.974 53.8%,
+      0.975 57.1%,
+      0.997 69.8%,
+      1.003 76.9%,
+      1.004 83.8%,
+      1
+    );
+    --spring-soft: linear(
+      0,
+      0.0105 1%,
+      0.1306 4.4%,
+      0.4141 9.6%,
+      0.7245 16.3%,
+      0.8697 21.3%,
+      0.9516 26.5%,
+      0.9877 31.3%,
+      1.0039 37.2%,
+      1.0062 43.8%,
+      1.0013 64.8%,
+      1
+    );
+  }
+}
