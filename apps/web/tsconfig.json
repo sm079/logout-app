@@ -5,6 +5,14 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true
   },
-  "include": ["src", "test", "test-live"],
-  "exclude": ["src/service-worker"]
+  "include": [
+    "src",
+    "test",
+    "test-live",
+    "e2e",
+    "playwright.config.ts"
+  ],
+  "exclude": [
+    "src/service-worker"
+  ]
 }

@@ -24,6 +24,7 @@ Requires Node 22.17+ (see `.nvmrc`) and pnpm 11.
 pnpm install
 pnpm dev      # the web app at http://localhost:5173/app
 pnpm test     # every package's tests
+pnpm --filter @logout/web test:e2e   # browser tests on the production build (see below)
 pnpm check    # type checks
 pnpm lint     # eslint + prettier
 ```
@@ -81,3 +82,10 @@ before inviting beta users. A sign-in link, if an email carries one, is accepted
 Tests: `pnpm --filter @logout/web test` runs sync against the real migrations in Postgres compiled to WASM.
 `pnpm --filter @logout/web test:live` runs it against a project (`SUPABASE_URL`, `SUPABASE_KEY` and
 `SUPABASE_SECRET_KEY` set), with throwaway users it deletes afterwards.
+
+## Browser tests
+
+`apps/web/e2e` drives the production build in a browser, at desktop and phone sizes: first run, logging, editing
+and deleting, a food's stated values, the demo, the landing page's composer, and opening offline. They run in
+Playwright's Chromium (`npx playwright install chromium` once) or in any Chromium-based browser given as
+`CHROME_PATH`.
