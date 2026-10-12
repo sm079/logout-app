@@ -23,7 +23,7 @@ const rows = (page: Page) => page.locator('.lentry[data-id]');
 
 test('first run, then a lift logged, edited and deleted', async ({ page }) => {
   await page.goto('/app');
-  await expect(page.getByRole('heading', { name: 'Set up LogOut' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Set up LogOut' })).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByText('In Strength, type').first()).toBeVisible();

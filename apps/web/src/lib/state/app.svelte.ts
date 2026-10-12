@@ -8,7 +8,7 @@ import { DEFAULT_DEVICE, defaultProfile, type Aliases, type Device, type Profile
 import { addDays, clockNow, fromIso, isoOf, startOfDay } from '../logic/dates.ts';
 import type { Selection } from '../logic/calendar.ts';
 
-export type Sheet = { kind: 'setup' } | { kind: 'profile' } | { kind: 'item'; itemKind: Mode; key: string; from: HTMLElement | null };
+export type Sheet = { kind: 'profile' } | { kind: 'item'; itemKind: Mode; key: string; from: HTMLElement | null };
 
 export type AppEvent =
   /** Something was logged; `before` is the day's session count before it */

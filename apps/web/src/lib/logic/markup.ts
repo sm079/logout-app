@@ -34,7 +34,8 @@ export const esc = (s: string): string =>
 /** Whether an item already has a card (a name never seen before is underlined) */
 export type Known = (kind: Kind, key: string) => boolean;
 
-function tokClass(tk: Token, kind: Kind, key: string | null, known: Known | null): string {
+/** The class a token is coloured with */
+export function tokClass(tk: Token, kind: Kind, key: string | null, known: Known | null): string {
   if (tk.role === 'name') {
     if (ANY.has(kind)) return `tk-name k-${kind}`;
     return !known || (key && known(kind, key)) ? 'tk-name' : 'tk-name new';

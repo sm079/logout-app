@@ -36,7 +36,7 @@
   }
   $effect(() => {
     const esc = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || !app.sheet || app.sheet.kind === 'setup') return;
+      if (e.key !== 'Escape' || e.defaultPrevented || !app.sheet) return;
       e.preventDefault();
       close();
     };
@@ -50,7 +50,7 @@
     {#if shown.kind === 'item'}
       <ItemSheet kind={shown.itemKind} itemKey={shown.key} {leaving} onclose={close} />
     {:else}
-      <ProfileSheet setup={shown.kind === 'setup'} {leaving} onclose={() => close()} />
+      <ProfileSheet {leaving} onclose={() => close()} />
     {/if}
   {/key}
 {/if}

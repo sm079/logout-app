@@ -10,6 +10,8 @@
   import { track } from '../observe/analytics.ts';
   import { app } from '../state/app.svelte.ts';
   import { initAccount } from '../sync/account.svelte.ts';
+  import { DEFAULT_FLOW, flowAsked, type FlowId } from '../onboard/flows.ts';
+  import Onboarding from '../onboard/Onboarding.svelte';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
   import DemoBar from './DemoBar.svelte';
@@ -21,6 +23,11 @@
   let screen = $state<HTMLElement>(),
     calEl = $state<HTMLElement>();
   let failed = $state('');
+  // The first-run setup, over the screen; the app behind it is put together as it leaves
+  let onboard = $state.raw<{ flow: FlowId; preview: boolean; switcher: boolean } | null>(null);
+  let behind = $state(true);
+  // Nothing shows until it's known whether the setup comes first, so the app isn't put together only to be taken away
+  let decided = $state(false);
 
   onMount(() => {
     const wide = matchMedia('(min-width: 900px)');
@@ -30,7 +37,12 @@
     app
       .boot({ demo })
       .then(() => {
-        if (app.firstRun) app.sheet = { kind: 'setup' };
+        const asked = flowAsked(location.search);
+        if (app.firstRun || asked) {
+          onboard = { flow: asked ?? DEFAULT_FLOW, preview: !app.firstRun, switcher: !!asked };
+          behind = false;
+        }
+        decided = true;
         // The demo is never synced
         if (demo) track('demo opened');
         else void initAccount();
@@ -43,22 +55,27 @@
   });
 </script>
 
-{#if app.ready}
+{#if app.ready && decided}
   <main class="screen" class:merged={app.logsOpen && !app.wide} bind:this={screen}>
-    <div class="behind" inert={!!app.sheet}>
-      <Calendar bind:el={calEl} onProfile={() => (app.sheet = { kind: 'profile' })} />
-      <section class="canvas" aria-label="Summary for the selected period">
-        <Widgets />
-      </section>
-      <div class="glow" aria-hidden="true"></div>
-      <Dock {calEl} />
-    </div>
+    {#if behind}
+      <div class="behind" inert={!!app.sheet || !!onboard}>
+        <Calendar bind:el={calEl} onProfile={() => (app.sheet = { kind: 'profile' })} />
+        <section class="canvas" aria-label="Summary for the selected period">
+          <Widgets />
+        </section>
+        <div class="glow" aria-hidden="true"></div>
+        <Dock {calEl} />
+      </div>
+    {/if}
     {#if screen}
       <Tooltip {screen} />
       <MetricPicker {screen} />
     {/if}
     <Sheets />
-    {#if app.demo}<DemoBar />{/if}
+    {#if onboard}
+      <Onboarding {...onboard} onleave={() => (behind = true)} onend={() => (onboard = null)} />
+    {/if}
+    {#if app.demo && !onboard}<DemoBar />{/if}
     <UpdateBar />
     <p class="vh" aria-live="polite">{app.announce}</p>
   </main>

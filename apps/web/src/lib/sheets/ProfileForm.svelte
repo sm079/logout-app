@@ -1,7 +1,4 @@
-<!--
-  Sex and height (body fat needs both), units, daily goals and the sample history. The first-run setup and the
-  profile share it; everything here can change later.
--->
+<!-- The profile's form: sex and height (body fat needs both), units, daily goals and the sample history -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import type { Units } from '@logout/engine';
