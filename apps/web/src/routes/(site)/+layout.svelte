@@ -20,7 +20,7 @@
   <header class="s-head" class:scrolled={y > 8}>
     <div class="s-bar">
       <a class="s-brand" href={resolve('/(site)')}>
-        <img src="/icon.svg" alt="" width="28" height="28" />
+        <img src="/mark.svg" alt="" width="26" height="20" />
         <span>LogOut</span>
       </a>
       <nav class="s-nav" aria-label="Site">
@@ -36,7 +36,7 @@
     <div class="s-foot-top">
       <div class="s-foot-brand">
         <a class="s-brand" href={resolve('/(site)')}>
-          <img src="/icon.svg" alt="" width="28" height="28" />
+          <img src="/mark.svg" alt="" width="26" height="20" />
           <span>LogOut</span>
         </a>
         <p>A fitness log you type into.</p>
