@@ -1,6 +1,6 @@
 {
-  "name": "Logout",
-  "short_name": "Logout",
+  "name": "LogOut",
+  "short_name": "LogOut",
   "description": "A fitness log you type into.",
   "id": "/app",
   "start_url": "/app",

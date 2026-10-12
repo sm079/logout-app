@@ -65,7 +65,7 @@
 {:else if failed}
   <main class="screen boot-msg">
     <div>
-      <h1>Logout can't start here</h1>
+      <h1>LogOut can't start here</h1>
       {#if failed === 'storage'}
         <p>
           It keeps your log on this device, and this browser isn't letting it store anything. A private window often does that; try a normal

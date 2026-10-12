@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Logout demo</title>
+  <title>LogOut demo</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 

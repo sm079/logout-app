@@ -244,16 +244,16 @@ port = 465
 user = "resend"
 pass = "env(RESEND_API_KEY)"
 admin_email = "onboarding@resend.dev"
-sender_name = "Logout"
+sender_name = "LogOut"
 
 # Sign-in emails carry a 6-digit code to type into the app (a link opens the browser, not the installed app).
 # Custom templates need the custom SMTP sender above.
 [auth.email.template.magic_link]
-subject = "Your Logout code: {{ .Token }}"
+subject = "Your LogOut code: {{ .Token }}"
 content_path = "./supabase/templates/code.html"
 
 [auth.email.template.confirmation]
-subject = "Your Logout code: {{ .Token }}"
+subject = "Your LogOut code: {{ .Token }}"
 content_path = "./supabase/templates/code.html"
 
 # Uncomment to customize email template

@@ -23,7 +23,7 @@ const rows = (page: Page) => page.locator('.lentry[data-id]');
 
 test('first run, then a lift logged, edited and deleted', async ({ page }) => {
   await page.goto('/app');
-  await expect(page.getByRole('heading', { name: 'Set up Logout' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Set up LogOut' })).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByText('In Strength, type').first()).toBeVisible();
@@ -86,7 +86,7 @@ test("the landing page's phone types on its own, then reads what a visitor types
   const phone = page.locator('.s-phone');
   // Its own first line, read as it's typed
   await expect(phone.locator('.mirror .ro')).toHaveText('2,500 kg', { timeout: 10000 });
-  const field = page.getByLabel('Type a line to see how Logout reads it');
+  const field = page.getByLabel('Type a line to see how LogOut reads it');
   await field.click();
   await expect(field).toHaveValue('');
   await field.fill('bench press 3x8 60kg');

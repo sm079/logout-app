@@ -1,7 +1,7 @@
-# Logout
+# LogOut
 
 A fitness log you type into. Pick Strength, Cardio or Food, write what you did the way you'd say it
-(`bench press 3x8 60kg @8`, `easy run 8km 46:30`, `chicken breast 200g 330kcal 62p 0c 7f`), and Logout reads it.
+(`bench press 3x8 60kg @8`, `easy run 8km 46:30`, `chicken breast 200g 330kcal 62p 0c 7f`), and LogOut reads it.
 
 - **Text is the record.** Only what was typed is kept, and it is never rewritten. Everything shown is worked out
   from the text, so one change can move other entries' numbers.

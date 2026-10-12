@@ -21,7 +21,7 @@
     <div class="s-bar">
       <a class="s-brand" href={resolve('/(site)')}>
         <img src="/icon.svg" alt="" width="28" height="28" />
-        <span>Logout</span>
+        <span>LogOut</span>
       </a>
       <nav class="s-nav" aria-label="Site">
         <a href={resolve('/demo')} data-sveltekit-reload>Demo</a>
@@ -37,7 +37,7 @@
       <div class="s-foot-brand">
         <a class="s-brand" href={resolve('/(site)')}>
           <img src="/icon.svg" alt="" width="28" height="28" />
-          <span>Logout</span>
+          <span>LogOut</span>
         </a>
         <p>A fitness log you type into.</p>
       </div>
@@ -67,9 +67,9 @@
       </nav>
     </div>
     <div class="s-foot-base">
-      <span>© 2026 Logout</span>
+      <span>© 2026 LogOut</span>
       <span>Runs on your device. Works offline.</span>
     </div>
-    <div class="s-mark" aria-hidden="true">Logout</div>
+    <div class="s-mark" aria-hidden="true">LogOut</div>
   </footer>
 </div>

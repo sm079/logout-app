@@ -1,4 +1,4 @@
-/* Logout's log engine: reads typed log lines and works out what they add up to.
+/* LogOut's log engine: reads typed log lines and works out what they add up to.
    Pure: no DOM, storage or clock, so it runs the same in a page, a worker and tests. */
 
 /** Bumped whenever the same text could read differently, so devices on different versions can tell */

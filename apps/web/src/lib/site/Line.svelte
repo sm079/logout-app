@@ -1,4 +1,4 @@
-<!-- One example line, coloured as Logout reads it, with what it comes to -->
+<!-- One example line, coloured as LogOut reads it, with what it comes to -->
 <script lang="ts">
   import { readout, type Resolved } from '@logout/engine';
   import { markup } from '../logic/markup.ts';

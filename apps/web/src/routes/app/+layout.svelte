@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Logout</title>
+  <title>LogOut</title>
 </svelte:head>
 
 {@render children()}

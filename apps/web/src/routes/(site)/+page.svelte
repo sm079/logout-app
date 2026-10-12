@@ -43,15 +43,15 @@
 </script>
 
 <svelte:head>
-  <title>Logout · a fitness log you type into</title>
+  <title>LogOut · a fitness log you type into</title>
   <meta
     name="description"
-    content="Log training and food the way you'd say it. Logout reads every line as you type, on your device, and adds up your day."
+    content="Log training and food the way you'd say it. LogOut reads every line as you type, on your device, and adds up your day."
   />
-  <meta property="og:title" content="Logout · a fitness log you type into" />
+  <meta property="og:title" content="LogOut · a fitness log you type into" />
   <meta
     property="og:description"
-    content="Log training and food the way you'd say it. Logout reads every line as you type, on your device."
+    content="Log training and food the way you'd say it. LogOut reads every line as you type, on your device."
   />
   <meta property="og:image" content="/icon-512.png" />
 </svelte:head>
@@ -63,7 +63,7 @@
     <h1 class="s-title">
       {#each TITLE as w, i (i)}<span class="s-w" style="--d:{90 + i * 70}">{w}</span>{GAP}{/each}
     </h1>
-    <p class="s-sub s-in" style="--d:520">Type your training and meals in plain words. Logout adds up your day.</p>
+    <p class="s-sub s-in" style="--d:520">Type your training and meals in plain words. LogOut adds up your day.</p>
     <div class="s-ctas s-in" style="--d:620">
       <a class="s-cta" href={resolve('/app')} data-sveltekit-reload>Start logging</a>
       <a class="s-cta alt" href={resolve('/demo')} data-sveltekit-reload>Try the demo</a>
@@ -94,7 +94,7 @@
     <div class="s-end-glow" aria-hidden="true"></div>
     <h2>Start with one line.</h2>
     <div class="s-ctas center">
-      <a class="s-cta" href={resolve('/app')} data-sveltekit-reload>Open Logout</a>
+      <a class="s-cta" href={resolve('/app')} data-sveltekit-reload>Open LogOut</a>
     </div>
     <ul class="s-facts">
       {#each FACTS as [icon, label] (label)}
