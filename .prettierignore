@@ -8,3 +8,4 @@ packages/engine/test/legacy/
 packages/sample/test/legacy/
 apps/web/static/
 supabase/.temp/
+supabase/templates/
