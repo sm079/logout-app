@@ -1,5 +1,5 @@
-/* The app's main flows in a real browser: the first-run setup in each of its flows, logging, editing and deleting,
-   values stated once, the log on a phone, the demo, the landing page's phone, and opening with no network. */
+/* The app's main flows in a real browser: the first-run setup, logging, editing and deleting, values stated once,
+   the log on a phone, the demo, the landing page's phone, and opening with no network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -64,34 +64,13 @@ test('first run, then a lift logged, edited and deleted', async ({ page }) => {
 test.describe('the first-run setup', () => {
   // Units are guessed from the time zone; London starts in kilograms and kilometres
   test.use({ timezoneId: 'Europe/London' });
-  const unitButton = (page: Page) => page.getByRole('button', { name: /^A number on its own is in/ });
 
-  test('First line: LogOut types a line and reads it, then the person picks units and the sample', async ({ page }) => {
+  test('one question a screen, each with a control of its own, then the app', async ({ page }) => {
     await page.goto('/app');
-    const setup = page.getByRole('dialog', { name: 'Set up LogOut' });
-    // Its own line, read piece by piece
-    await expect(setup.locator('.fl-chip').filter({ hasText: 'Sets × reps' })).toBeVisible({ timeout: 10000 });
-    // Theirs, read the same way; LOG here keeps nothing
-    const field = setup.getByLabel("What you did, as you'd say it");
-    await field.fill('squat 5x5 100kg');
-    await expect(setup.locator('.mirror .ro')).toHaveText('2,500 kg');
-    await setup.getByRole('button', { name: /^Log it/ }).click();
-    await expect(setup.getByText('Today so far')).toBeVisible();
-    await setup.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'lb' }).click();
-    await expect(setup.locator('.fl-unit-line').first()).toContainText('2,500 lb');
-    await setup.getByRole('radio', { name: /Sample history/ }).click();
-    await setup.getByRole('button', { name: 'Start' }).click();
-    await expect(setup).toBeHidden();
-    await expect(unitButton(page)).toHaveAccessibleName(/in lb/);
-    await page.getByRole('button', { name: 'Profile and settings' }).click();
-    await expect(page.getByRole('dialog')).toContainText('sample history on');
-  });
-
-  test('Tune: each answer has a control of its own', async ({ page }) => {
-    await page.goto('/app?onboard=tune');
     const setup = page.getByRole('dialog', { name: 'Set up LogOut' });
     const next = () => setup.locator('.ob-cta .log').click();
     await next();
+    await expect(setup.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'kg' })).toBeChecked();
     await setup.getByRole('radiogroup', { name: 'Distance in' }).getByRole('radio', { name: 'mi' }).click();
     await next();
     await setup.getByRole('radio', { name: 'Female', exact: true }).click();
@@ -104,31 +83,13 @@ test.describe('the first-run setup', () => {
     await dial.focus();
     await dial.press('PageDown');
     await expect(dial).toHaveAttribute('aria-valuenow', '2350');
-    await next();
+    // Targets are the last question: the sample history is never offered
     await setup.getByRole('button', { name: 'Start' }).click();
     await expect(setup).toBeHidden();
     await page.getByRole('button', { name: 'Cardio', exact: true }).click();
-    await expect(unitButton(page)).toHaveAccessibleName(/in mi/);
-  });
-
-  test('Script: answers are typed, and read as they are typed', async ({ page }) => {
-    await page.goto('/app?onboard=script');
-    const setup = page.getByRole('dialog', { name: 'Set up LogOut' });
-    const field = setup.getByLabel('Your answer');
-    const say = async (text: string) => {
-      await field.fill(text);
-      await field.press('Enter');
-    };
-    await say('lb and miles');
-    await expect(setup.locator('.sc-me').last()).toContainText('lb · mi');
-    await say('banana');
-    await expect(setup.locator('.sc-me').last()).toContainText('not read');
-    await say('male 5ft 11in');
-    await say('keep defaults');
-    await say('empty');
-    await setup.getByRole('button', { name: 'Start' }).click();
-    await expect(setup).toBeHidden();
-    await expect(unitButton(page)).toHaveAccessibleName(/in lb/);
+    await expect(page.getByRole('button', { name: /^A number on its own is in/ })).toHaveAccessibleName(/in mi/);
+    await page.getByRole('button', { name: 'Profile and settings' }).click();
+    await expect(page.getByRole('dialog')).not.toContainText('sample history on');
   });
 });
 

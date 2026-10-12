@@ -1,7 +1,7 @@
 <!--
-  Tune: one question a screen, each answered with something that moves. A plate flips between kilograms and
-  pounds and a road's marks stretch to miles; a ruler slides under a needle while the logo's bar grows with it; a
-  dial fills with the day's calories, coloured by their split; a calendar lights up with the sample history.
+  The setup's screens: one question a screen, each answered with something that moves. A plate flips between
+  kilograms and pounds and a road's marks stretch to miles; a ruler slides under a needle while the logo's bar
+  grows with it; a dial fills with the day's calories, coloured by their split.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -13,23 +13,33 @@
   import type { IconName } from '../ui/icons.ts';
   import { REDUCE, replay, roll } from '../ui/motion.ts';
   import Dial from './Dial.svelte';
-  import type { FlowProps } from './flows.ts';
   import { gramsFor, nearestSplit, SPLITS, splitOf, type SplitId } from './goals.ts';
   import Mark from './Mark.svelte';
   import Ruler from './Ruler.svelte';
-  import StartChoice from './StartChoice.svelte';
+  import type { SetupValues } from './setup.svelte.ts';
   import { heightText, litres } from './words.ts';
 
-  let { values, onfinish, onskip, onsignin }: FlowProps = $props();
+  let {
+    values,
+    onfinish,
+    onskip,
+    onsignin
+  }: {
+    /** Where the answers start */
+    values: SetupValues;
+    onfinish: (v: SetupValues) => void;
+    onskip: () => void;
+    /** Opens sign-in, when there's an account to sign in to */
+    onsignin: (() => void) | null;
+  } = $props();
   const start = untrack(() => values);
 
   const STEPS: { icon: IconName; name: string }[] = [
     { icon: 'weight', name: 'Units' },
     { icon: 'user', name: 'Body' },
-    { icon: 'flame', name: 'Targets' },
-    { icon: 'calendar', name: 'Start' }
+    { icon: 'flame', name: 'Targets' }
   ];
-  const ACTION = ['BEGIN', 'NEXT', 'NEXT', 'NEXT', 'START'];
+  const ACTION = ['BEGIN', 'NEXT', 'NEXT', 'START'];
   const MACROS = [
     ['p', 'Protein'],
     ['c', 'Carbs'],
@@ -46,7 +56,6 @@
   let splitId = $state<SplitId | null>(nearestSplit(start.goals));
   let water = $state(start.goals.water);
   let steps = $state(start.goals.steps);
-  let sample = $state(start.sample);
   let titleEl = $state<HTMLElement>();
 
   const imperial = $derived(units.load === 'lb');
@@ -76,7 +85,7 @@
 
   async function go(d: number) {
     if (step + d > STEPS.length) {
-      onfinish({ sex, heightCm, units: { ...units }, goals: { kcal, ...grams, water, steps }, sample });
+      onfinish({ sex, heightCm, units: { ...units }, goals: { kcal, ...grams, water, steps } });
       return;
     }
     dir = d;
@@ -135,7 +144,7 @@
           <div class="tn-hello">
             <div class="tn-mark"><Mark size={92} still={REDUCE} /></div>
             <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:700" bind:this={titleEl}>Let’s tune LogOut to you.</h1>
-            <p class="tn-sub enter" style="--d:780">Four quick things. Change any of them later.</p>
+            <p class="tn-sub enter" style="--d:780">Three quick things. Change any of them later.</p>
             <ul class="tn-coming">
               {#each STEPS as s, i (s.name)}
                 <li class="enter" style="--d:{880 + i * 70}"><span class="ic"><Icon name={s.icon} /></span>{s.name}</li>
@@ -198,7 +207,7 @@
             </div>
             <Ruler bind:value={heightCm} {imperial} rest={imperial ? 175 : 172} label="Height" />
           </div>
-        {:else if step === 3}
+        {:else}
           <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:40" bind:this={titleEl}>Your daily targets.</h1>
           <p class="tn-sub enter" style="--d:90">Drag round the ring. Food counts down from these.</p>
           <div class="enter" style="--d:150"><Dial bind:kcal {split} /></div>
@@ -230,10 +239,6 @@
               () => (steps = nudge(steps, 1, 500, 1000, 40000))
             )}
           </div>
-        {:else}
-          <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:40" bind:this={titleEl}>Fresh, or explore first?</h1>
-          <p class="tn-sub enter" style="--d:90">The sample shows what LogOut draws from months of logs.</p>
-          <div class="enter" style="--d:160"><StartChoice bind:sample /></div>
         {/if}
       </section>
     {/key}

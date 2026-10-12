@@ -10,7 +10,6 @@
   import { track } from '../observe/analytics.ts';
   import { app } from '../state/app.svelte.ts';
   import { initAccount } from '../sync/account.svelte.ts';
-  import { DEFAULT_FLOW, flowAsked, type FlowId } from '../onboard/flows.ts';
   import Onboarding from '../onboard/Onboarding.svelte';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
@@ -24,7 +23,7 @@
     calEl = $state<HTMLElement>();
   let failed = $state('');
   // The first-run setup, over the screen; the app behind it is put together as it leaves
-  let onboard = $state.raw<{ flow: FlowId; preview: boolean; switcher: boolean } | null>(null);
+  let onboard = $state.raw<{ preview: boolean } | null>(null);
   let behind = $state(true);
   // Nothing shows until it's known whether the setup comes first, so the app isn't put together only to be taken away
   let decided = $state(false);
@@ -37,9 +36,9 @@
     app
       .boot({ demo })
       .then(() => {
-        const asked = flowAsked(location.search);
-        if (app.firstRun || asked) {
-          onboard = { flow: asked ?? DEFAULT_FLOW, preview: !app.firstRun, switcher: !!asked };
+        // `?onboard` shows it again on a device that's set up, as a preview
+        if (app.firstRun || new URLSearchParams(location.search).has('onboard')) {
+          onboard = { preview: !app.firstRun };
           behind = false;
         }
         decided = true;
