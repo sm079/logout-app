@@ -97,6 +97,10 @@ the dev server. Without a key the SDK isn't even bundled. Nothing sent includes 
 console or request-body breadcrumbs, and PostHog sends a dozen named events with kinds and counts only (no
 autocapture, recordings, heatmaps or remotely enabled extras).
 
+With `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` also set, `pnpm build` uploads the app's source maps to
+Sentry, matched to reports by debug IDs, and then removes them from `build/`, so stack traces show the original code
+while the site serves none of it. The browser tests' build skips the upload.
+
 Content blockers often block PostHog's and Sentry's own domains. In production, send both through your own domain
 with a reverse proxy: for PostHog, for example `/ingest/*` to `https://us.i.posthog.com/*` with `POSTHOG_HOST` set to
 it; for Sentry, a tunnel endpoint (Sentry's `tunnel` option) that forwards envelopes to the DSN's host.
