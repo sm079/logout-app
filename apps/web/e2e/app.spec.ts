@@ -11,7 +11,7 @@ async function start(page: Page) {
 async function log(page: Page, text: string) {
   const field = page.getByLabel("What you did, as you'd say it");
   await field.fill(text);
-  await page.locator('button.log').click();
+  await page.locator('.actions button.log').click();
   await expect(field).toHaveValue('', { timeout: 5000 });
 }
 /** On a phone the log opens over the widgets; on a wide screen it's always there */
@@ -25,13 +25,14 @@ test('first run, then a lift logged, edited and deleted', async ({ page }) => {
   await page.goto('/app');
   await expect(page.getByRole('heading', { name: 'Set up Logout' })).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByText('In Strength, type').first()).toBeVisible();
 
   // Read as it's typed: the result sits at the line's end and LOG shows the total
   await page.getByLabel("What you did, as you'd say it").fill('bench press 3x8 60kg @8');
   await expect(page.locator('.mirror .ro')).toHaveText('1,440 kg');
-  await expect(page.locator('button.log')).toHaveAccessibleName(/3 sets · 1\.4 t/);
-  await page.locator('button.log').click();
+  await expect(page.locator('.actions button.log')).toHaveAccessibleName(/3 sets · 1\.4 t/);
+  await page.locator('.actions button.log').click();
 
   await showLog(page);
   await expect(rows(page)).toHaveCount(1);

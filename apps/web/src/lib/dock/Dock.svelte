@@ -53,14 +53,20 @@
     if (sum) lastSum = sum;
   });
 
+  // LOG takes the next entry as soon as the field has cleared; its "logged" state lingers a little longer
+  let locked = false;
+  let resetT: ReturnType<typeof setTimeout> | undefined;
   function doLog() {
-    if (busy) return;
+    if (locked) return;
     const text = composer.text();
     if (!text) {
       composer.nudge();
       return;
     }
+    locked = true;
+    done = false;
     busy = true;
+    clearTimeout(resetT);
     const mode = app.mode;
     setTimeout(
       async () => {
@@ -73,7 +79,8 @@
       },
       REDUCE ? 0 : 650
     );
-    setTimeout(
+    setTimeout(() => (locked = false), REDUCE ? 0 : 950);
+    resetT = setTimeout(
       () => {
         busy = false;
         done = false;
