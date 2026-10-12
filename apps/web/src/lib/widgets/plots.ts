@@ -142,7 +142,8 @@ export function linePlot(host: HTMLElement, { axes, area, id }: { axes: boolean;
     cancelAnimationFrame(revealRaf);
     const t0 = performance.now();
     const step = (now: number) => {
-      const p = Math.min(1, (now - t0) / 1000);
+      // A frame's time can be a little before t0, which would draw a negative width
+      const p = clamp((now - t0) / 1000, 0, 1);
       E.clip.setAttribute('width', (full * (1 - Math.pow(1 - p, 4))).toFixed(1));
       revealRaf = p < 1 ? requestAnimationFrame(step) : 0;
     };
@@ -255,7 +256,7 @@ export function linePlot(host: HTMLElement, { axes, area, id }: { axes: boolean;
     const t0 = performance.now(),
       dur = 640;
     const step = (now: number) => {
-      const p = Math.min(1, (now - t0) / dur),
+      const p = clamp((now - t0) / dur, 0, 1),
         e = 1 - Math.pow(1 - p, 3);
       live = from.map((v, i) => v + (target[i]! - v) * e);
       apply(live, base);

@@ -236,7 +236,8 @@
     const t0 = performance.now();
     const step = (now: number) => {
       if (!g || g.held || g.dead) return;
-      const p = Math.min(1, (now - t0) / GROW),
+      // A frame's time can be a little before t0
+      const p = Math.max(0, Math.min(1, (now - t0) / GROW)),
         e = 1 - Math.pow(1 - p, 2);
       const x = from.x + (to.x - from.x) * e,
         w = from.w + (to.w - from.w) * e;
