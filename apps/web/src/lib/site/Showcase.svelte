@@ -305,7 +305,7 @@
 
 <figure class="s-device" bind:this={device}>
   <figcaption class="vh">
-    Logout's composer. It types a few lines on its own; type your own to see how they read. Nothing is saved.
+    LogOut's composer. It types a few lines on its own; type your own to see how they read. Nothing is saved.
   </figcaption>
   <div class="s-phone" bind:this={phone}>
     <div class="s-phone-screen" class:focus={ring} bind:this={screen}>
@@ -341,7 +341,7 @@
 
         <div class="composer" class:s-focus={ring} bind:this={composer}>
           <div class="field" class:has-text={!!text} class:focused class:typing class:clearing bind:this={field}>
-            <label for="try" class="vh">Type a line to see how Logout reads it</label>
+            <label for="try" class="vh">Type a line to see how LogOut reads it</label>
             <div class="ghost" bind:this={ghost} aria-hidden="true">
               <span>{MODES[mode].placeholders[0]}</span><span class="gcaret"></span>
             </div>

@@ -36,7 +36,7 @@
     bad = !pending;
     hint = pending
       ? `${f.name}: ${nf(pending.entries.length)} entries. Merge keeps yours and adds these; Replace puts them in place of your ${nf(app.book?.own ?? 0)}.`
-      : `${f.name} isn't a Logout export.`;
+      : `${f.name} isn't a LogOut export.`;
   }
   async function merge() {
     if (!pending) return;

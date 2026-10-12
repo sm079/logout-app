@@ -79,7 +79,7 @@
 <Sheet
   bind:this={sheet}
   {thumb}
-  title={setup ? 'Set up Logout' : 'Profile'}
+  title={setup ? 'Set up LogOut' : 'Profile'}
   sub={setup
     ? 'For your goals and body fat. You can change any of it later from your profile.'
     : `${nf(own)} ${own === 1 ? 'entry' : 'entries'} of your own${app.device.sample ? ' · sample history on' : ''}`}
@@ -89,7 +89,7 @@
   oncancel={skip}
   onok={take}
 >
-  {#if setup}<AccountSection intro="Already use Logout? Sign in to bring your log to this device." />{/if}
+  {#if setup}<AccountSection intro="Already use LogOut? Sign in to bring your log to this device." />{/if}
   <ProfileForm bind:this={form} {initial} />
   {#if !setup}
     <AccountSection />

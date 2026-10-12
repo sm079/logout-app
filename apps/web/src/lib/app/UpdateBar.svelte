@@ -16,7 +16,7 @@
   <div class="update" role="status">
     <span class="update-text">
       {#if behind}
-        <b>Update to read your log the same way</b><span>Another of your devices has a newer Logout.</span>
+        <b>Update to read your log the same way</b><span>Another of your devices has a newer LogOut.</span>
       {:else}
         <b>A new version is ready</b><span>Reload to use it. Your log stays as it is.</span>
       {/if}

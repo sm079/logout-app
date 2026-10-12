@@ -1,6 +1,6 @@
 <svelte:head>
-  <title>Privacy · Logout</title>
-  <meta name="description" content="What Logout keeps, where, and what it sends." />
+  <title>Privacy · LogOut</title>
+  <meta name="description" content="What LogOut keeps, where, and what it sends." />
 </svelte:head>
 
 <main class="s-doc">
@@ -8,7 +8,7 @@
   <p class="s-small">Last updated October 12, 2026</p>
 
   <p>
-    Logout is a fitness log you type into. This page says what it keeps, where it keeps it, and what it sends anywhere else. The short
+    LogOut is a fitness log you type into. This page says what it keeps, where it keeps it, and what it sends anywhere else. The short
     version: your log stays on your device unless you sign in to sync it, and nothing reads your entries but the app on your own device.
   </p>
 

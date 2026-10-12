@@ -96,7 +96,7 @@
         <div class="su-row">
           <span class="su-name" id="suShare"
             >Help improve reading<span class="su-hint"
-              >Sends lines Logout couldn’t read, with item names and notes taken out, so it can learn to read them.</span
+              >Sends lines LogOut couldn’t read, with item names and notes taken out, so it can learn to read them.</span
             ></span
           >
           <button
