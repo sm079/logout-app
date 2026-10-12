@@ -91,7 +91,7 @@ test("the landing page's phone types on its own, then reads what a visitor types
   await expect(field).toHaveValue('');
   await field.fill('bench press 3x8 60kg');
   await expect(phone.locator('.mirror .ro')).toHaveText('1,440 kg');
-  await expect(phone.locator('.log-sum')).toHaveText('3 sets · 1,440 kg');
+  await expect(phone.locator('.log-sum')).toHaveText('3 sets · 1.4 t');
   // LOG keeps nothing: the field just clears
   await phone.getByRole('button', { name: /^Log it/ }).click();
   await expect(field).toHaveValue('');
