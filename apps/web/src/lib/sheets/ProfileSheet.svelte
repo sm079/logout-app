@@ -6,6 +6,8 @@
   import { app } from '../state/app.svelte.ts';
   import { nf } from '../logic/format.ts';
   import Icon from '../ui/Icon.svelte';
+  import { account } from '../sync/account.svelte.ts';
+  import AccountSection from './AccountSection.svelte';
   import DataSection from './DataSection.svelte';
   import ProfileForm from './ProfileForm.svelte';
   import { track } from '../observe/analytics.ts';
@@ -48,9 +50,15 @@
     app.firstRun = false;
     onclose();
   }
+  // Signing in from the setup brings the account's profile and log, so there's nothing left to set up
+  $effect(() => {
+    if (setup && account.user) void skip();
+  });
+
   async function skip() {
     if (setup) {
-      await app.repo.saveProfile($state.snapshot(app.profile));
+      // Signed in, the account's profile arrives by sync; saving defaults here would overwrite it
+      if (!account.user) await app.repo.saveProfile($state.snapshot(app.profile));
       app.device = { ...app.device, setupDone: true };
       await app.repo.saveDevice($state.snapshot(app.device));
       app.firstRun = false;
@@ -81,6 +89,10 @@
   oncancel={skip}
   onok={take}
 >
+  {#if setup}<AccountSection intro="Already use Logout? Sign in to bring your log to this device." />{/if}
   <ProfileForm bind:this={form} {initial} />
-  {#if !setup}<DataSection />{/if}
+  {#if !setup}
+    <AccountSection />
+    <DataSection />
+  {/if}
 </Sheet>

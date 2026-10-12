@@ -11,7 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -19,10 +20,12 @@
     "@logout/engine": "workspace:*",
     "@logout/sample": "workspace:*",
     "@sentry/browser": "^11.6.0",
+    "@supabase/supabase-js": "^2.117.3",
     "dexie": "^4.4.6",
     "posthog-js": "^1.438.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@resvg/resvg-js": "^2.6.2",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/kit": "^3.0.1",

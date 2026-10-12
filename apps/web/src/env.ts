@@ -5,6 +5,18 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 const optional = (value: string | undefined) => value?.trim() ?? '';
 
 export const variables = defineEnvVars({
+  SUPABASE_URL: {
+    public: true,
+    static: true,
+    schema: optional,
+    description: "The Supabase project's URL, for sign-in and sync"
+  },
+  SUPABASE_KEY: {
+    public: true,
+    static: true,
+    schema: optional,
+    description: "The Supabase project's publishable (anon) key"
+  },
   SENTRY_DSN: {
     public: true,
     static: true,

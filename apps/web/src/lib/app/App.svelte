@@ -7,7 +7,9 @@
   import Calendar from '../calendar/Calendar.svelte';
   import Dock from '../dock/Dock.svelte';
   import Sheets from '../sheets/Sheets.svelte';
+  import { track } from '../observe/analytics.ts';
   import { app } from '../state/app.svelte.ts';
+  import { initAccount } from '../sync/account.svelte.ts';
   import MetricPicker from '../widgets/MetricPicker.svelte';
   import Widgets from '../widgets/Widgets.svelte';
   import DemoBar from './DemoBar.svelte';
@@ -29,6 +31,9 @@
       .boot({ demo })
       .then(() => {
         if (app.firstRun) app.sheet = { kind: 'setup' };
+        // The demo is never synced
+        if (demo) track('demo opened');
+        else void initAccount();
       })
       .catch((err: unknown) => {
         console.error(err);

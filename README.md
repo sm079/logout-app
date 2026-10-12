@@ -51,3 +51,32 @@ original reference implementation (`test/legacy/`) over the full sample history,
   `src/lib/state/app.svelte.ts`. Pure logic lives in `src/lib/logic` and is unit-tested in `apps/web/test`.
 - **Offline:** a service worker caches the build, so the app opens without a network. A new version waits until
   the user reloads into it.
+
+## Sync
+
+Sign-in and sync use a Supabase project; without one configured the app keeps everything on the device.
+`supabase/` holds the schema (`migrations/`) and auth settings (`config.toml`).
+
+- Every write goes through `sync_push()`, which stamps changed rows with the user's next version under a row lock,
+  so a device pulling "everything after version N" never misses a row. The newer `updatedAt` wins.
+- Row-level security lets each user read only their own rows; tables take no direct writes.
+- `delete_account()` removes a user and everything synced for them.
+
+Setting up a project:
+
+```sh
+pnpm exec supabase login
+pnpm exec supabase link --project-ref <ref>
+pnpm exec supabase db push        # the migrations
+pnpm exec supabase config push    # auth settings
+```
+
+Then put the project's URL and publishable key in `apps/web/.env` (see `.env.example`).
+
+Sign-in is by an emailed code, which works inside the installed app. Custom email templates need a custom SMTP
+sender (`[auth.email.smtp]` in `config.toml`); Supabase's built-in sender only reaches the project team's addresses,
+a few an hour, and its default email carries a sign-in link, which the app also accepts.
+
+Tests: `pnpm --filter @logout/web test` runs sync against the real migrations in Postgres compiled to WASM.
+`pnpm --filter @logout/web test:live` runs it against a project (`SUPABASE_URL`, `SUPABASE_KEY` and
+`SUPABASE_SECRET_KEY` set), with throwaway users it deletes afterwards.

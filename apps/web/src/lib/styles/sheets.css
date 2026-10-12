@@ -367,3 +367,18 @@
 .su-title:focus {
   outline: none;
 }
+.su-intro {
+  margin: 0;
+  padding: 11px 0 2px;
+}
+form.su-row {
+  margin: 0;
+}
+.su-code {
+  font-family: var(--mono);
+  letter-spacing: 0.2em;
+}
+.lact:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

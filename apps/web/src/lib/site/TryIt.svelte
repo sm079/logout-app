@@ -8,6 +8,7 @@
   import { sumParts } from '../logic/format.ts';
   import { markup } from '../logic/markup.ts';
   import { placeReadouts, type Overflow } from '../ui/readouts.ts';
+  import { track } from '../observe/analytics.ts';
 
   const EXAMPLES: Record<Mode, string[]> = {
     strength: ['bench press 3x8 60kg @8', 'squat 100x5, 110x3, 120x1', 'pull-ups 4x8 +10kg'],
@@ -20,6 +21,7 @@
   let text = $state(EXAMPLES.strength[0]!);
   let ta: HTMLTextAreaElement, mirror: HTMLDivElement, field: HTMLDivElement;
   let overflow = $state.raw<Overflow[]>([]);
+  let typed = false;
   const read = $derived(text.trim() ? preview(null, text, mode) : null);
   const total = $derived(
     read
@@ -68,7 +70,18 @@
     <div class="field" class:has-text={!!text} bind:this={field}>
       <label for="try" class="vh">Type a line to see how Logout reads it</label>
       <div class="mirror" bind:this={mirror} aria-hidden="true"></div>
-      <textarea id="try" rows="1" spellcheck="false" autocomplete="off" maxlength="600" bind:this={ta} bind:value={text}></textarea>
+      <textarea
+        id="try"
+        rows="1"
+        spellcheck="false"
+        autocomplete="off"
+        maxlength="600"
+        bind:this={ta}
+        bind:value={text}
+        oninput={() => {
+          if (!typed) track('try typed', { mode });
+          typed = true;
+        }}></textarea>
     </div>
     {#if overflow.length}
       <p class="ro-more" aria-hidden="true">
