@@ -23,6 +23,12 @@ export const variables = defineEnvVars({
     schema: optional,
     description: 'Where error reports go (a Sentry project DSN)'
   },
+  SENTRY_TUNNEL: {
+    public: true,
+    static: true,
+    schema: optional,
+    description: "A path on the app's own site that passes error reports on to Sentry (/tunnel on Cloudflare); empty sends them directly"
+  },
   POSTHOG_KEY: {
     public: true,
     static: true,

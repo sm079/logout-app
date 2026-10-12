@@ -1,0 +1,16 @@
+// Hosting on Cloudflare: the built site is served as static files, and a small worker runs only for the error report
+// tunnel. Deploy with `pnpm run deploy`, which builds first and passes the Sentry DSN from .env.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "logout",
+  "main": "worker/tunnel.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./build",
+    "binding": "ASSETS",
+    // Unknown paths get the app's fallback page, which shows its own not-found screen
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/tunnel"]
+  },
+  "observability": { "enabled": false }
+}

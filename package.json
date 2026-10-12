@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "pnpm --filter @logout/web dev",
     "build": "pnpm --recursive build",
+    "deploy": "pnpm --filter @logout/web run deploy",
     "test": "pnpm --recursive test",
     "check": "pnpm --recursive check",
     "lint": "eslint . && prettier --check .",

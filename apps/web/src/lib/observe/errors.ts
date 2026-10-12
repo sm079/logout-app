@@ -1,6 +1,6 @@
 /* Error reports. Sent only when the app is built with a Sentry DSN, and never with what was typed: no clicks or
    console lines are kept as breadcrumbs (their labels can hold entry text), and no personal details are attached. */
-import { SENTRY_DSN } from '$app/env/public';
+import { SENTRY_DSN, SENTRY_TUNNEL } from '$app/env/public';
 import { version } from '$app/env';
 
 type Sentry = typeof import('@sentry/browser');
@@ -13,6 +13,8 @@ export async function initErrors(): Promise<void> {
   const s = await import('@sentry/browser');
   s.init({
     dsn: SENTRY_DSN,
+    // Through the app's own site where it has a tunnel, since blockers stop Sentry's domain
+    tunnel: SENTRY_TUNNEL || undefined,
     release: version,
     environment: import.meta.env.MODE,
     // No user details, and no request bodies: a sync request's body holds the log itself

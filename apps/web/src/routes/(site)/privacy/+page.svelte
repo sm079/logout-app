@@ -5,7 +5,7 @@
 
 <main class="s-doc">
   <h1>Privacy</h1>
-  <p class="s-small">Last updated October 11, 2026</p>
+  <p class="s-small">Last updated October 12, 2026</p>
 
   <p>
     Logout is a fitness log you type into. This page says what it keeps, where it keeps it, and what it sends anywhere else. The short
@@ -33,8 +33,15 @@
   <h2>Usage and errors</h2>
   <p>
     To improve the app we may collect anonymous usage events (for example that a screen was opened or an entry was logged, never what it
-    said) and reports of errors the app runs into. Neither includes the text of your entries. If you turn on “Help improve reading” in your
-    profile, lines that the app couldn’t read are sent with item names and notes removed, so we can teach it to read them.
+    said), counted by PostHog, and reports of errors the app runs into, which go to Sentry. Neither includes the text of your entries. If
+    you turn on “Help improve reading” in your profile, lines that the app couldn’t read are sent with item names and notes removed, so we
+    can teach it to read them.
+  </p>
+
+  <h2>Hosting</h2>
+  <p>
+    The site and the app are served by Cloudflare, and error reports pass through it on their way to Sentry. Like any web host, it sees the
+    network address each request comes from. It gets none of your log.
   </p>
 
   <h2>What we don’t do</h2>

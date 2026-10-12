@@ -11,6 +11,7 @@ export default ts.config(
       '**/dist/',
       '**/build/',
       '**/.svelte-kit/',
+      '**/.wrangler/',
       '**/coverage/',
       '**/test/legacy/',
       'apps/web/static/',

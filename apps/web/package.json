@@ -10,6 +10,7 @@
     "dev": "vite dev",
     "build": "vite build && node scripts/strip-maps.js",
     "preview": "vite preview",
+    "deploy": "pnpm build && node scripts/deploy.js",
     "test": "vitest run",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test:live": "vitest run --config vitest.live.config.ts",
@@ -39,6 +40,7 @@
     "svelte-check": "^4.7.6",
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "wrangler": "^4.149.0"
   }
 }
