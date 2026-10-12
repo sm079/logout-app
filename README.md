@@ -97,5 +97,6 @@ the dev server. Without a key the SDK isn't even bundled. Nothing sent includes 
 console or request-body breadcrumbs, and PostHog sends a dozen named events with kinds and counts only (no
 autocapture, recordings, heatmaps or remotely enabled extras).
 
-Content blockers often block PostHog's own domain. In production, send analytics through your own domain with a
-reverse proxy (for example `/ingest/*` to `https://us.i.posthog.com/*`) and set `POSTHOG_HOST` to it.
+Content blockers often block PostHog's and Sentry's own domains. In production, send both through your own domain
+with a reverse proxy: for PostHog, for example `/ingest/*` to `https://us.i.posthog.com/*` with `POSTHOG_HOST` set to
+it; for Sentry, a tunnel endpoint (Sentry's `tunnel` option) that forwards envelopes to the DSN's host.

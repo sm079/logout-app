@@ -25,6 +25,11 @@ export async function initErrors(): Promise<void> {
   for (const [err, ctx] of early.splice(0)) s.captureException(err, ctx ? { extra: ctx } : undefined);
 }
 
+/** An uncaught error or rejection: Sentry catches these itself once it's loaded, so only earlier ones are kept */
+export function reportUncaught(err: unknown): void {
+  if (!sentry) report(err);
+}
+
 /** Reports an error (kept until reporting is ready, if it isn't yet). Context must not hold entry text. */
 export function report(err: unknown, context?: Record<string, unknown>): void {
   if (!SENTRY_DSN || import.meta.env.DEV) return;
