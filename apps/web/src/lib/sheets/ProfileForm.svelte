@@ -1,4 +1,4 @@
-<!-- The profile's form: sex and height (body fat needs both), units, daily goals and the sample history -->
+<!-- The profile's form: sex and height (body fat needs both), units and daily goals -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import type { Units } from '@logout/engine';
@@ -22,7 +22,6 @@
   let sex = $state(initial.sex);
   let load = $state(initial.units.load);
   let dist = $state(initial.units.dist);
-  let sample = $state(initial.sample);
   const h0 = initial.heightCm,
     in0 = h0 ? inchesOf(h0) : null;
   let cm = $state<number | null>(h0 ? Math.round(h0) : null);
@@ -57,7 +56,7 @@
     if (badHeight) return null;
     const g = {} as Goals;
     for (const [k] of GOAL_ROWS) g[k] = numIn(goals[k]) || GOALS[k];
-    return { sex, heightCm: heightCm && Math.round(heightCm * 10) / 10, units: { load, dist }, goals: g, sample };
+    return { sex, heightCm: heightCm && Math.round(heightCm * 10) / 10, units: { load, dist }, goals: g };
   }
 </script>
 
@@ -161,24 +160,5 @@
         <span class="su-num"><input type="number" inputmode="decimal" min="0" {step} bind:value={goals[k]} /><small>{unit}</small></span>
       </label>
     {/each}
-  </div>
-</div>
-<div class="su-group" style="--d:230">
-  <div class="su-rows">
-    <div class="su-row">
-      <span class="su-name" id="suSample"
-        >Sample history<span class="su-hint"
-          >Years of made-up logs to explore with. Turning it off later leaves your own entries as they are.</span
-        ></span
-      >
-      <button
-        type="button"
-        class="su-switch press"
-        role="switch"
-        aria-checked={sample}
-        aria-labelledby="suSample"
-        onclick={() => (sample = !sample)}
-      ></button>
-    </div>
   </div>
 </div>
