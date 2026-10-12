@@ -89,3 +89,13 @@ Tests: `pnpm --filter @logout/web test` runs sync against the real migrations in
 and deleting, a food's stated values, the demo, the landing page's composer, and opening offline. They run in
 Playwright's Chromium (`npx playwright install chromium` once) or in any Chromium-based browser given as
 `CHROME_PATH`.
+
+## Error reports and analytics
+
+Both are off unless the build has their keys (`SENTRY_DSN`, `POSTHOG_KEY` in `apps/web/.env`), and neither runs on
+the dev server. Without a key the SDK isn't even bundled. Nothing sent includes entry text: Sentry keeps no click,
+console or request-body breadcrumbs, and PostHog sends a dozen named events with kinds and counts only (no
+autocapture, recordings, heatmaps or remotely enabled extras).
+
+Content blockers often block PostHog's own domain. In production, send analytics through your own domain with a
+reverse proxy (for example `/ingest/*` to `https://us.i.posthog.com/*`) and set `POSTHOG_HOST` to it.

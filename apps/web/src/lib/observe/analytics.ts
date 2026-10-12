@@ -7,7 +7,8 @@ let ph: PostHog | null = null;
 const queued: [string, Record<string, unknown>][] = [];
 
 export async function initAnalytics(): Promise<void> {
-  if (!POSTHOG_KEY || ph) return;
+  // The dev server never sends analytics, so local work stays out of the numbers
+  if (!POSTHOG_KEY || ph || import.meta.env.DEV) return;
   const { default: posthog } = await import('posthog-js');
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
@@ -15,6 +16,15 @@ export async function initAnalytics(): Promise<void> {
     capture_pageview: 'history_change',
     capture_pageleave: false,
     disable_session_recording: true,
+    // Nothing the project's settings switch on from afar: no click or heatmap capture, no extra scripts
+    capture_dead_clicks: false,
+    capture_heatmaps: false,
+    capture_exceptions: false,
+    capture_performance: false,
+    disable_external_dependency_loading: true,
+    disable_web_experiments: true,
+    disable_product_tours: true,
+    disable_conversations: true,
     disable_surveys: true,
     mask_all_text: true,
     mask_all_element_attributes: true,
@@ -44,7 +54,7 @@ export type Event =
 
 /** Records an event. Properties are counts and kinds only, never text. */
 export function track(event: Event, props: Record<string, string | number | boolean | null> = {}): void {
-  if (!POSTHOG_KEY) return;
+  if (!POSTHOG_KEY || import.meta.env.DEV) return;
   if (ph) ph.capture(event, props);
   else if (queued.length < 50) queued.push([event, props]);
 }

@@ -8,7 +8,8 @@ let sentry: Sentry | null = null;
 const early: [unknown, Record<string, unknown> | undefined][] = [];
 
 export async function initErrors(): Promise<void> {
-  if (!SENTRY_DSN || sentry) return;
+  // Errors on the dev server show in its console instead
+  if (!SENTRY_DSN || sentry || import.meta.env.DEV) return;
   const s = await import('@sentry/browser');
   s.init({
     dsn: SENTRY_DSN,
@@ -26,7 +27,7 @@ export async function initErrors(): Promise<void> {
 
 /** Reports an error (kept until reporting is ready, if it isn't yet). Context must not hold entry text. */
 export function report(err: unknown, context?: Record<string, unknown>): void {
-  if (!SENTRY_DSN) return;
+  if (!SENTRY_DSN || import.meta.env.DEV) return;
   if (sentry) sentry.captureException(err, context ? { extra: context } : undefined);
   else if (early.length < 20) early.push([err, context]);
 }
