@@ -49,7 +49,6 @@ export type Event =
   | 'data imported'
   | 'entries cleared'
   | 'demo opened'
-  | 'try typed'
   | 'app updated';
 
 /** Records an event. Properties are counts and kinds only, never text. */

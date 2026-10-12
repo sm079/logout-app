@@ -1,5 +1,5 @@
 /* The app's main flows in a real browser: first run, logging, editing and deleting, values stated once, the log on a
-   phone, the demo, the landing page's composer, and opening with no network. */
+   phone, the demo, the landing page's phone, and opening with no network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -81,12 +81,20 @@ test('the demo opens on years of sample history', async ({ page }) => {
   await expect(page.getByRole('button', { name: /^2019, \d+ sessions$/ })).toBeVisible();
 });
 
-test("the landing page's composer reads what a visitor types", async ({ page }) => {
+test("the landing page's phone types on its own, then reads what a visitor types", async ({ page }) => {
   await page.goto('/');
+  const phone = page.locator('.s-phone');
+  // Its own first line, read as it's typed
+  await expect(phone.locator('.mirror .ro')).toHaveText('2,500 kg', { timeout: 10000 });
   const field = page.getByLabel('Type a line to see how Logout reads it');
-  await field.fill('squat 5x5 100kg');
-  await expect(page.locator('.s-try .mirror .ro')).toHaveText('2,500 kg');
-  await expect(page.locator('.s-total')).toContainText('5 sets');
+  await field.click();
+  await expect(field).toHaveValue('');
+  await field.fill('bench press 3x8 60kg');
+  await expect(phone.locator('.mirror .ro')).toHaveText('1,440 kg');
+  await expect(phone.locator('.log-sum')).toHaveText('3 sets · 1.4 t');
+  // LOG keeps nothing: the field just clears
+  await phone.getByRole('button', { name: /^Log it/ }).click();
+  await expect(field).toHaveValue('');
 });
 
 test('the app opens with no network once it has been loaded', async ({ page, context, browserName }) => {
