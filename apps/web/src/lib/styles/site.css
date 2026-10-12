@@ -61,9 +61,6 @@ html:has(.s-page) {
   letter-spacing: -0.02em;
   text-decoration: none;
 }
-.s-brand img {
-  border-radius: 8px;
-}
 .s-nav {
   display: flex;
   align-items: center;
