@@ -1,9 +1,9 @@
 <!--
   The logo putting itself together: the bar rises, the plate rolls in against it, its rings draw on and the hole
-  drops in. `bar` stretches the bar (a height, in the Tune flow). Still, it's simply the logo.
+  drops in. Still, it's simply the logo.
 -->
 <script lang="ts">
-  let { size = 64, still = false, bar = 1, delay = 0 }: { size?: number; still?: boolean; bar?: number; delay?: number } = $props();
+  let { size = 64, still = false, delay = 0 }: { size?: number; still?: boolean; delay?: number } = $props();
 </script>
 
 <svg
@@ -12,7 +12,7 @@
   viewBox="88 126 336 260"
   width={Math.round((size * 336) / 260)}
   height={size}
-  style="--mk-d:{delay}ms;--bar:{bar}"
+  style="--mk-d:{delay}ms"
   aria-hidden="true"
 >
   <rect class="mk-bar" x="90" y="136" width="56" height="240" rx="28" />

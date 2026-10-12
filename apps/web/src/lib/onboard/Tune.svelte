@@ -1,32 +1,39 @@
 <!--
-  The setup's screens: one question a screen, each answered with something that moves. A plate flips between
-  kilograms and pounds and a road's marks stretch to miles; a ruler slides under a needle while the logo's bar
-  grows with it; a dial fills with the day's calories, coloured by their split.
+  The setup's screens: a welcome, then three questions, one a screen, each answered with something that moves. The
+  units load a barbell and stretch a track; the height slides along a ruler; the day's calories fill a dial,
+  coloured by their split. The steps in the header, the button and the light behind carry through from screen to
+  screen, and the button always says what it will save.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
-  import { cubicIn, expoOut } from 'svelte/easing';
+  import { cubicIn } from 'svelte/easing';
   import type { Units } from '@logout/engine';
   import type { Sex } from '../data/types.ts';
   import { nf } from '../logic/format.ts';
+  import { MTINT, thumbStyle, type MTintName } from '../logic/palette.ts';
   import Icon from '../ui/Icon.svelte';
   import type { IconName } from '../ui/icons.ts';
-  import { REDUCE, replay, roll } from '../ui/motion.ts';
+  import { REDUCE, roll } from '../ui/motion.ts';
+  import Barbell from './Barbell.svelte';
   import Dial from './Dial.svelte';
   import { gramsFor, nearestSplit, SPLITS, splitOf, type SplitId } from './goals.ts';
   import Mark from './Mark.svelte';
   import Ruler from './Ruler.svelte';
   import type { SetupValues } from './setup.svelte.ts';
+  import Track from './Track.svelte';
   import { heightText, litres } from './words.ts';
 
   let {
     values,
+    leaving = false,
     onfinish,
     onskip,
     onsignin
   }: {
     /** Where the answers start */
     values: SetupValues;
+    /** The setup is handing over to the app: the button becomes LOG */
+    leaving?: boolean;
     onfinish: (v: SetupValues) => void;
     onskip: () => void;
     /** Opens sign-in, when there's an account to sign in to */
@@ -34,10 +41,11 @@
   } = $props();
   const start = untrack(() => values);
 
-  const STEPS: { icon: IconName; name: string }[] = [
-    { icon: 'weight', name: 'Units' },
-    { icon: 'user', name: 'Body' },
-    { icon: 'flame', name: 'Targets' }
+  // Each question keeps the colour the app gives its kind of numbers
+  const STEPS: { icon: IconName; name: string; tint: MTintName }[] = [
+    { icon: 'weight', name: 'Units', tint: 'training' },
+    { icon: 'user', name: 'Body', tint: 'body' },
+    { icon: 'flame', name: 'Targets', tint: 'nutrition' }
   ];
   const ACTION = ['BEGIN', 'NEXT', 'NEXT', 'START'];
   const MACROS = [
@@ -45,22 +53,43 @@
     ['c', 'Carbs'],
     ['f', 'Fat']
   ] as const;
+  const SEXES = [
+    ['male', 'Male'],
+    ['female', 'Female']
+  ] as const;
+  const tint = (t: MTintName) => thumbStyle(MTINT[t]);
 
   let step = $state(0),
     dir = $state(1);
+  let root: HTMLDivElement;
+  let titleEl = $state<HTMLElement>();
+
+  /* ---------- Answers ---------- */
   let units = $state<Units>({ ...start.units });
+  const imperial = $derived(units.load === 'lb');
+  function setUnit(k: keyof Units, v: string) {
+    if (k === 'load') units.load = v as Units['load'];
+    else units.dist = v as Units['dist'];
+  }
+
+  // The ruler shows a height from the start. It's kept once it's moved or a sex is picked; picking a sex first
+  // glides it to that sex's average height
+  const AVERAGE = { male: 176, female: 163 };
   let sex = $state<Sex | null>(start.sex);
-  let heightCm = $state<number | null>(start.heightCm);
+  let heightCm = $state(start.heightCm ?? 170);
+  let heightSet = $state(start.heightCm != null);
+  function pickSex(v: Sex) {
+    sex = sex === v ? null : v;
+    if (sex && !heightSet) heightCm = AVERAGE[sex];
+  }
+  const keepHeight = $derived(!!sex || heightSet);
+
   let kcal = $state(start.goals.kcal);
   let grams = $state({ p: start.goals.p, c: start.goals.c, f: start.goals.f });
   let splitId = $state<SplitId | null>(nearestSplit(start.goals));
   let water = $state(start.goals.water);
   let steps = $state(start.goals.steps);
-  let titleEl = $state<HTMLElement>();
-
-  const imperial = $derived(units.load === 'lb');
   const split = $derived(splitOf(grams));
-
   // A named split sets the grams from the calories; without one, the grams keep their shares
   let lastKcal = untrack(() => kcal);
   $effect(() => {
@@ -75,49 +104,81 @@
     splitId = id;
     grams = gramsFor(kcal, SPLITS.find(x => x.id === id)!.split);
   }
+  const nudge = (v: number, d: number, by: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, Math.round((v + d * by) / by) * by));
 
-  let plate = $state<HTMLElement>();
-  function setUnit<K extends keyof Units>(k: K, v: Units[K]) {
-    if (units[k] === v) return;
-    units[k] = v;
-    if (k === 'load') replay(plate, 'tn-flip');
+  /* ---------- The button: what's next, and what it will save ---------- */
+  const label = $derived(leaving ? 'LOG' : ACTION[step]!);
+  const meta = $derived.by(() => {
+    if (leaving) return '';
+    if (step === 1) return `${units.load} · ${units.dist}`;
+    if (step === 2) {
+      const h = heightText(heightCm, imperial)!;
+      if (sex) return `${sex === 'male' ? 'Male' : 'Female'} · ${h}`;
+      return heightSet ? h : 'Leave for now';
+    }
+    if (step === 3) return `${nf(kcal)} kcal · ${grams.p} g protein`;
+    return '';
+  });
+
+  function finish() {
+    onfinish({
+      sex,
+      heightCm: keepHeight ? Math.round(heightCm * 10) / 10 : null,
+      units: { ...units },
+      goals: { kcal, ...grams, water, steps }
+    });
   }
 
+  /* ---------- Moving between screens ---------- */
+  // Leaving the welcome, its three steps fly up into the header and become the progress
+  let flying = $state(false);
   async function go(d: number) {
-    if (step + d > STEPS.length) {
-      onfinish({ sex, heightCm, units: { ...units }, goals: { kcal, ...grams, water, steps } });
-      return;
-    }
-    dir = d;
+    if (step + d > STEPS.length) return finish();
+    const from = step === 0 && d > 0 ? [...root.querySelectorAll<HTMLElement>('.tn-coming li')].map(e => e.getBoundingClientRect()) : null;
+    flying = !!from;
+    dir = Math.sign(d);
     step = Math.max(0, step + d);
     await tick();
+    if (from && !REDUCE) flyUp(from);
     titleEl?.focus({ preventScroll: true });
   }
-
-  // Each screen comes in from the side it's heading to, and the last one leaves towards the other
-  function enter(_: Element) {
-    const d = dir;
-    return {
-      duration: REDUCE ? 0 : 640,
-      easing: expoOut,
-      css: (t: number, u: number) => `opacity:${t};transform:translateX(${u * 64 * d}px) scale(${1 - u * 0.04});filter:blur(${u * 8}px)`
-    };
+  function flyUp(from: DOMRect[]) {
+    const easing = getComputedStyle(root).getPropertyValue('--spring-soft').trim() || 'ease-out';
+    root.querySelectorAll<HTMLElement>('.tn-steps li').forEach((el, i) => {
+      const a = from[i],
+        b = el.getBoundingClientRect();
+      if (!a) return;
+      const dx = a.left + a.width / 2 - (b.left + b.width / 2),
+        dy = a.top + a.height / 2 - (b.top + b.height / 2);
+      el.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px) scale(1.15)`, opacity: 1 },
+          { transform: 'none', opacity: 1 }
+        ],
+        {
+          duration: 820,
+          delay: i * 70,
+          easing,
+          fill: 'backwards'
+        }
+      );
+    });
   }
+  // The screen going leaves quickly the other way; the next one's parts arrive one after another (CSS)
   function leave(_: Element) {
     const d = dir;
     return {
-      duration: REDUCE ? 0 : 260,
+      duration: REDUCE ? 0 : 220,
       easing: cubicIn,
-      css: (t: number, u: number) => `opacity:${t};transform:translateX(${-u * 40 * d}px) scale(${1 - u * 0.03});filter:blur(${u * 6}px)`
+      css: (t: number, u: number) => `opacity:${t};transform:translateX(${-u * 28 * d}px);filter:blur(${u * 6}px)`
     };
   }
-
-  const bar = $derived(heightCm == null ? 1 : Math.min(1.3, Math.max(0.7, 1 + (heightCm - 172) / 120)));
-  const nudge = (v: number, d: number, by: number, min: number, max: number) =>
-    Math.min(max, Math.max(min, Math.round((v + d * by) / by) * by));
 </script>
 
-<div class="tn" data-step={step}>
+<div class="tn" data-step={step} style="--aura:{step ? MTINT[STEPS[step - 1]!.tint][1] : 'var(--lime)'}" bind:this={root}>
+  <div class="tn-aura" aria-hidden="true"></div>
+
   <header class="ob-top">
     {#if step > 0}
       <button type="button" class="ob-round press" aria-label="Back" onclick={() => go(-1)}
@@ -126,9 +187,22 @@
     {:else}
       <span class="ob-round ghosted" aria-hidden="true"></span>
     {/if}
-    <ol class="tn-progress" class:shown={step > 0} aria-label="Step {step} of {STEPS.length}">
+    <ol class="tn-steps" class:shown={step > 0} aria-label="Step {step} of {STEPS.length}">
       {#each STEPS as s, i (s.name)}
-        <li class:done={step > i + 1} class:now={step === i + 1}><span class="vh">{s.name}</span></li>
+        {@const n = i + 1}
+        <li class:now={step === n} class:done={step > n} style={tint(s.tint)}>
+          <button
+            type="button"
+            class="press"
+            disabled={step <= n}
+            aria-current={step === n ? 'step' : undefined}
+            aria-label={step > n ? `Back to ${s.name}` : s.name}
+            onclick={() => go(n - step)}
+          >
+            {#key step > n}<span class="ic tn-ico"><Icon name={step > n ? 'check' : s.icon} /></span>{/key}
+            <span class="tn-steps-name"><span>{s.name}</span></span>
+          </button>
+        </li>
       {/each}
     </ol>
     <div class="ob-top-acts">
@@ -139,130 +213,145 @@
 
   <div class="tn-stage">
     {#key step}
-      <section class="tn-step" in:enter out:leave aria-labelledby="tnTitle">
+      <section class="tn-step" style="--dir:{dir}" out:leave aria-labelledby="tnTitle">
         {#if step === 0}
           <div class="tn-hello">
-            <div class="tn-mark"><Mark size={92} still={REDUCE} /></div>
-            <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:700" bind:this={titleEl}>Let’s tune LogOut to you.</h1>
-            <p class="tn-sub enter" style="--d:780">Three quick things. Change any of them later.</p>
-            <ul class="tn-coming">
+            <div class="tn-mark"><Mark size={96} still={REDUCE} /></div>
+            <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:760" bind:this={titleEl}>Let’s tune LogOut to you.</h1>
+            <p class="tn-sub enter" style="--d:840">Three quick things. Change any of them later.</p>
+            <ul class="tn-coming" class:flown={flying}>
               {#each STEPS as s, i (s.name)}
-                <li class="enter" style="--d:{880 + i * 70}"><span class="ic"><Icon name={s.icon} /></span>{s.name}</li>
+                <li class="enter" style="--d:{960 + i * 80};{tint(s.tint)}"><span class="ic"><Icon name={s.icon} /></span>{s.name}</li>
               {/each}
             </ul>
           </div>
-        {:else if step === 1}
-          <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:40" bind:this={titleEl}>How do you measure?</h1>
-          <p class="tn-sub enter" style="--d:90">A number typed on its own is read in these.</p>
-          <div class="tn-units">
-            <div class="tn-inst enter" style="--d:150">
-              <div class="tn-plate" bind:this={plate} aria-hidden="true">
-                <svg viewBox="-64 -64 128 128">
-                  <circle r="62" class="tn-disc" />
-                  <circle r="52" class="tn-ring" />
-                  <circle r="34" class="tn-ring faint" />
-                </svg>
-                <span class="tn-plate-n"
-                  ><span class="roll" use:roll={{ text: imperial ? '45' : '20' }}></span><small>{units.load}</small></span
-                >
-              </div>
-              <span class="tn-inst-name">Weight</span>
-              {@render seg('Weight in', 'load', ['kg', 'lb'])}
-            </div>
-            <div class="tn-inst enter" style="--d:210">
-              <div class="tn-road" class:mi={units.dist === 'mi'} aria-hidden="true">
-                <span class="tn-road-ticks"></span>
-                <span class="tn-road-span"><span class="roll" use:roll={{ text: `1 ${units.dist}` }}></span></span>
-              </div>
-              <span class="tn-inst-name">Distance</span>
-              {@render seg('Distance in', 'dist', ['km', 'mi'])}
-            </div>
-          </div>
-        {:else if step === 2}
-          <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:40" bind:this={titleEl}>For body fat.</h1>
-          <p class="tn-sub enter" style="--d:90">It needs your sex and height. Leave them if you’d rather not.</p>
-          <div class="tn-sex enter" style="--d:150" role="radiogroup" aria-label="Sex">
-            {#each [['male', 'Male'], ['female', 'Female']] as [v, t] (v)}
-              <button
-                type="button"
-                class="tn-tile press"
-                role="radio"
-                aria-checked={sex === v}
-                onclick={() => (sex = sex === v ? null : (v as Sex))}
-              >
-                <span>{t}</span><span class="ob-tick" aria-hidden="true"></span>
-              </button>
-            {/each}
-          </div>
-          <div class="tn-height enter" style="--d:220">
-            <div class="tn-height-top">
-              <Mark size={58} still {bar} />
-              <span class="tn-height-n" class:unset={heightCm == null}>
-                <b>{heightText(heightCm, imperial) ?? '—'}</b>
-                <small>{heightCm == null ? 'Slide to set your height' : 'Height'}</small>
-              </span>
-              {#if heightCm != null}
-                <button type="button" class="ob-link press" onclick={() => (heightCm = null)}>Clear</button>
-              {/if}
-            </div>
-            <Ruler bind:value={heightCm} {imperial} rest={imperial ? 175 : 172} label="Height" />
-          </div>
         {:else}
-          <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:40" bind:this={titleEl}>Your daily targets.</h1>
-          <p class="tn-sub enter" style="--d:90">Drag round the ring. Food counts down from these.</p>
-          <div class="enter" style="--d:150"><Dial bind:kcal {split} /></div>
-          <div class="tn-splits enter" style="--d:210" role="radiogroup" aria-label="Split">
-            {#each SPLITS as s (s.id)}
-              <button type="button" class="press" role="radio" aria-checked={splitId === s.id} onclick={() => pickSplit(s.id)}
-                >{s.name}</button
-              >
-            {/each}
-          </div>
-          <ul class="tn-macros enter" style="--d:250">
-            {#each MACROS as [k, name] (k)}
-              <li class="m-{k}"><i></i><b>{grams[k]} g</b><small>{name}</small></li>
-            {/each}
-          </ul>
-          <div class="tn-more enter" style="--d:300">
-            {@render stepper(
-              'drop',
-              'Water',
-              litres(water),
-              () => (water = nudge(water, -1, 0.25, 0.5, 8)),
-              () => (water = nudge(water, 1, 0.25, 0.5, 8))
-            )}
-            {@render stepper(
-              'foot',
-              'Steps',
-              nf(steps),
-              () => (steps = nudge(steps, -1, 500, 1000, 40000)),
-              () => (steps = nudge(steps, 1, 500, 1000, 40000))
-            )}
-          </div>
+          <header class="tn-head">
+            <h1 class="tn-title tn-in" id="tnTitle" tabindex="-1" style="--k:0" bind:this={titleEl}>
+              {step === 1 ? 'How do you measure?' : step === 2 ? 'For body fat.' : 'Your daily targets.'}
+            </h1>
+            <p class="tn-sub tn-in" style="--k:1">
+              {#if step === 1}
+                Numbers typed without a unit, like <code><i class="tk-name">squat</i> <i class="tk-v">5x5 100</i></code> or
+                <code><i class="tk-name">run</i> <i class="tk-v">5</i></code>, are read in these.
+              {:else if step === 2}
+                LogOut works it out from your sex and height. Leave them if you’d rather.
+              {:else}
+                Drag round the ring. Food counts down from these.
+              {/if}
+            </p>
+          </header>
+
+          {#if step === 1}
+            <div class="tn-card tn-in" style="--k:2">
+              <div class="tn-card-head">
+                {@render head('weight', 'training', 'Weight', 'Lifts and body weight')}
+                {@render seg('Weight in', 'load', ['kg', 'lb'])}
+              </div>
+              <Barbell unit={units.load} />
+            </div>
+            <div class="tn-card tn-in" style="--k:3">
+              <div class="tn-card-head">
+                {@render head('route', 'activity', 'Distance', 'Runs, rides and walks')}
+                {@render seg('Distance in', 'dist', ['km', 'mi'])}
+              </div>
+              <Track unit={units.dist} />
+            </div>
+          {:else if step === 2}
+            <div class="tn-card tn-in" style="--k:2">
+              <div class="tn-card-head">
+                {@render head('user', 'body', 'Sex', 'The formula differs')}
+                <div class="su-seg tn-seg" role="radiogroup" aria-label="Sex">
+                  {#each SEXES as [v, t] (v)}
+                    <button type="button" role="radio" aria-checked={sex === v} onclick={() => pickSex(v)}>{t}</button>
+                  {/each}
+                </div>
+              </div>
+            </div>
+            <div class="tn-card tn-in" style="--k:3">
+              <div class="tn-card-head">
+                {@render head('distance', 'body', 'Height', imperial ? 'Feet and inches' : 'Centimetres', 'upright')}
+              </div>
+              <div class="tn-height" class:kept={keepHeight} aria-hidden="true">
+                {#if imperial}<b>{heightText(heightCm, true)}</b>{:else}<b>{Math.round(heightCm)}</b><small>cm</small>{/if}
+              </div>
+              <Ruler bind:value={heightCm} {imperial} label="Height" onpick={() => (heightSet = true)} />
+            </div>
+          {:else}
+            <div class="tn-card tn-cal tn-in" style="--k:2">
+              <div class="tn-card-head">
+                {@render head('flame', 'nutrition', 'Calories', 'And how they split')}
+              </div>
+              <Dial bind:kcal {split} />
+              <div class="tn-splits" role="radiogroup" aria-label="Split">
+                {#each SPLITS as s (s.id)}
+                  <button type="button" class="press" role="radio" aria-checked={splitId === s.id} onclick={() => pickSplit(s.id)}
+                    >{s.name}</button
+                  >
+                {/each}
+              </div>
+              <ul class="tn-macros">
+                {#each MACROS as [k, name] (k)}
+                  <li class="m-{k}"><i></i><b>{grams[k]} g</b><small>{name}</small></li>
+                {/each}
+              </ul>
+            </div>
+            <div class="tn-more tn-in" style="--k:3">
+              {@render stepper(
+                'drop',
+                'hydration',
+                'Water',
+                litres(water),
+                () => (water = nudge(water, -1, 0.25, 0.5, 8)),
+                () => (water = nudge(water, 1, 0.25, 0.5, 8))
+              )}
+              {@render stepper(
+                'foot',
+                'activity',
+                'Steps',
+                nf(steps),
+                () => (steps = nudge(steps, -1, 500, 1000, 40000)),
+                () => (steps = nudge(steps, 1, 500, 1000, 40000))
+              )}
+            </div>
+          {/if}
         {/if}
       </section>
     {/key}
   </div>
 
   <footer class="ob-cta">
-    <button type="button" class="log" aria-label={ACTION[step]!.charAt(0) + ACTION[step]!.slice(1).toLowerCase()} onclick={() => go(1)}>
-      <span class="log-face"><span class="log-title"><span class="roll" use:roll={{ text: ACTION[step]!, dir }}></span></span></span>
+    <button
+      type="button"
+      class="log"
+      aria-label={label.charAt(0) + label.slice(1).toLowerCase() + (meta ? `: ${meta}` : '')}
+      onclick={() => go(1)}
+    >
+      <span class="log-face">
+        <span class="log-title"><span class="roll" use:roll={{ text: label, dir }}></span></span>
+        <span class="log-meta" class:has-sum={!!meta}><span class="roll" use:roll={{ text: meta || ' ', dir }}></span></span>
+      </span>
     </button>
   </footer>
 </div>
 
+{#snippet head(icon: IconName, t: MTintName, name: string, caption: string, cls = '')}
+  <span class="thumb tn-thumb {cls}" style={tint(t)}><Icon name={icon} /></span>
+  <span class="tn-card-name"><b>{name}</b><small>{caption}</small></span>
+{/snippet}
+
 {#snippet seg(label: string, k: keyof Units, opts: string[])}
-  <div class="su-seg" role="radiogroup" aria-label={label}>
+  <div class="su-seg tn-seg" role="radiogroup" aria-label={label}>
     {#each opts as o (o)}
-      <button type="button" role="radio" aria-checked={units[k] === o} onclick={() => setUnit(k, o as Units[typeof k])}>{o}</button>
+      <button type="button" role="radio" aria-checked={units[k] === o} onclick={() => setUnit(k, o)}>{o}</button>
     {/each}
   </div>
 {/snippet}
 
-{#snippet stepper(icon: IconName, name: string, value: string, less: () => void, more: () => void)}
+{#snippet stepper(icon: IconName, t: MTintName, name: string, value: string, less: () => void, more: () => void)}
   <div class="tn-stepper">
-    <span class="ic"><Icon name={icon} /></span>
-    <span class="tn-stepper-text"><small>{name}</small><b>{value}</b></span>
+    <span class="thumb tn-thumb" style={tint(t)}><Icon name={icon} /></span>
+    <span class="tn-card-name"><small>{name}</small><b>{value}</b></span>
     <button type="button" class="step press" aria-label="Less {name.toLowerCase()}" onclick={less}
       ><span class="ic"><Icon name="minus" /></span></button
     >

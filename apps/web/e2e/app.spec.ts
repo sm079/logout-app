@@ -73,11 +73,14 @@ test.describe('the first-run setup', () => {
     await expect(setup.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'kg' })).toBeChecked();
     await setup.getByRole('radiogroup', { name: 'Distance in' }).getByRole('radio', { name: 'mi' }).click();
     await next();
-    await setup.getByRole('radio', { name: 'Female', exact: true }).click();
+    // The ruler shows a height from the start; picking a sex glides it to that sex's average
     const ruler = setup.getByRole('slider', { name: 'Height' });
+    await expect(ruler).toHaveAttribute('aria-valuetext', '170 centimetres');
+    await setup.getByRole('radio', { name: 'Female', exact: true }).click();
+    await expect(ruler).toHaveAttribute('aria-valuetext', '163 centimetres');
     await ruler.focus();
     await ruler.press('ArrowRight');
-    await expect(ruler).toHaveAttribute('aria-valuetext', /centimetres/);
+    await expect(setup.locator('.ob-cta .log')).toHaveAccessibleName(/Female · 164 cm/);
     await next();
     const dial = setup.getByRole('slider', { name: 'Calories a day' });
     await dial.focus();
@@ -89,7 +92,10 @@ test.describe('the first-run setup', () => {
     await page.getByRole('button', { name: 'Cardio', exact: true }).click();
     await expect(page.getByRole('button', { name: /^A number on its own is in/ })).toHaveAccessibleName(/in mi/);
     await page.getByRole('button', { name: 'Profile and settings' }).click();
-    await expect(page.getByRole('dialog')).not.toContainText('sample history on');
+    const profile = page.getByRole('dialog');
+    await expect(profile).not.toContainText('sample history on');
+    await expect(profile.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
+    await expect(profile.getByLabel('Centimetres')).toHaveValue('164');
   });
 });
 

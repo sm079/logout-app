@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { gramsFor, nearestSplit, snapKcal, splitOf, SPLITS } from '#lib/onboard/goals.ts';
-import { guessUnits } from '#lib/onboard/units.ts';
+import { guessUnits, loadOf } from '#lib/onboard/units.ts';
 import { heightText } from '#lib/onboard/words.ts';
 import { GOALS } from '#lib/data/types.ts';
 
@@ -17,6 +17,15 @@ describe('the units a first run starts with', () => {
     expect(guessUnits('UTC', ['en-US'])).toEqual({ load: 'lb', dist: 'mi' });
     expect(guessUnits('Etc/GMT+5', ['de-DE', 'en-US'])).toEqual({ load: 'kg', dist: 'km' });
     expect(guessUnits(undefined, ['en'])).toEqual({ load: 'kg', dist: 'km' });
+  });
+});
+
+describe('the barbell', () => {
+  test('a bar loaded to 100 takes the plates a gym has, heaviest first', () => {
+    expect(loadOf(100, 'kg')).toEqual({ bar: 20, side: [25, 15] });
+    expect(loadOf(100, 'lb')).toEqual({ bar: 45, side: [25, 2.5] });
+    expect(loadOf(225, 'lb')).toEqual({ bar: 45, side: [45, 45] });
+    expect(loadOf(10, 'kg')).toEqual({ bar: 20, side: [] });
   });
 });
 

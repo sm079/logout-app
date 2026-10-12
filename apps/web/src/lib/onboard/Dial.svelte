@@ -1,8 +1,9 @@
 <!--
   The day's calories as a ring. Dragging the knob round (or the arrow keys, or holding − and +) fills it, and the
-  fill is coloured by how the calories split into protein, carbs and fat.
+  fill is coloured by how the calories split into protein, carbs and fat. It winds up to its value as it arrives.
 -->
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import { nf } from '../logic/format.ts';
@@ -17,13 +18,22 @@
     GAP = 5;
   let svg: SVGSVGElement;
   let dragging = $state(false);
-  const shown = new Tween(0, { duration: REDUCE ? 0 : 420, easing: cubicOut });
+  // It arrives empty and winds up to its value; the number counts up with it
+  let wound = $state(REDUCE);
+  onMount(() => {
+    const t = setTimeout(() => (wound = true), 260);
+    return () => clearTimeout(t);
+  });
+  const shown = new Tween(0, { easing: cubicOut });
+  let first = true;
   $effect(() => {
-    shown.target = kcal;
+    if (!wound) return;
+    void shown.set(kcal, { duration: REDUCE ? 0 : first ? 900 : 420 });
+    first = false;
   });
 
   // The ring holds up to the dial's most; the fill is what's chosen, in three arcs
-  const fill = $derived(kcal / KCAL.max);
+  const fill = $derived((wound ? kcal : 0) / KCAL.max);
   const arcs = $derived.by(() => {
     const out: { k: 'p' | 'c' | 'f'; len: number; start: number }[] = [];
     let start = 0;
@@ -117,12 +127,7 @@
       <circle class="dl-knob-dot" cy={-R} r="5" />
     </g>
   </svg>
-  <div class="dl-mid">
-    <button type="button" class="dl-step press" aria-label="50 kcal less" tabindex="-1" use:hold={-1}><Icon name="minus" /></button>
-    <span class="dl-val">
-      <b>{nf(shown.current)}</b>
-      <small>kcal a day</small>
-    </span>
-    <button type="button" class="dl-step press" aria-label="50 kcal more" tabindex="-1" use:hold={1}><Icon name="plus" /></button>
-  </div>
+  <span class="dl-val" aria-hidden="true"><b>{nf(shown.current)}</b><small>kcal a day</small></span>
+  <button type="button" class="dl-step less press" aria-label="50 kcal less" tabindex="-1" use:hold={-1}><Icon name="minus" /></button>
+  <button type="button" class="dl-step more press" aria-label="50 kcal more" tabindex="-1" use:hold={1}><Icon name="plus" /></button>
 </div>
