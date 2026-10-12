@@ -94,6 +94,11 @@ class App {
       await this.repo.saveProfile(data.profile);
       await this.repo.saveDevice(data.device);
     }
+    if (!demo && data.device.sample) {
+      // The sample history is the demo's alone; a device that had it on from before goes back to its own log
+      data.device = { ...data.device, sample: false };
+      await this.repo.saveDevice(data.device);
+    }
     this.firstRun = !data.profile || !data.device.setupDone;
     if (data.profile)
       this.profile = {

@@ -86,14 +86,14 @@ test.describe('the first-run setup', () => {
     await dial.focus();
     await dial.press('PageDown');
     await expect(dial).toHaveAttribute('aria-valuenow', '2350');
-    // Targets are the last question: the sample history is never offered
+    // Targets are the last question
     await setup.getByRole('button', { name: 'Start' }).click();
     await expect(setup).toBeHidden();
     await page.getByRole('button', { name: 'Cardio', exact: true }).click();
     await expect(page.getByRole('button', { name: /^A number on its own is in/ })).toHaveAccessibleName(/in mi/);
     await page.getByRole('button', { name: 'Profile and settings' }).click();
     const profile = page.getByRole('dialog');
-    await expect(profile).not.toContainText('sample history on');
+    await expect(profile.getByRole('switch', { name: /Sample history/ })).toHaveCount(0);
     await expect(profile.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
     await expect(profile.getByLabel('Centimetres')).toHaveValue('164');
   });

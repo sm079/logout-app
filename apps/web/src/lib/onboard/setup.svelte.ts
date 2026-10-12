@@ -7,8 +7,8 @@ import { app } from '../state/app.svelte.ts';
 import { account } from '../sync/account.svelte.ts';
 import { unitsHere } from './units.ts';
 
-/** What the setup asks about: the profile without the sample history, which it never offers */
-export type SetupValues = Omit<ProfileValues, 'sample'>;
+/** What the setup asks about: the profile's form, all of it */
+export type SetupValues = ProfileValues;
 
 /** Where the setup starts: the profile as it is, with guessed units on a first run */
 export function startValues(): SetupValues {

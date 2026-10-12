@@ -16,8 +16,7 @@
     sex: app.profile.sex,
     heightCm: app.profile.heightCm,
     units: { ...app.profile.units },
-    goals: { ...app.profile.goals },
-    sample: app.device.sample
+    goals: { ...app.profile.goals }
   };
   const own = $derived(app.book?.own ?? 0);
 
@@ -30,10 +29,6 @@
     }
     app.profile = { ...app.profile, sex: v.sex, heightCm: v.heightCm, goals: v.goals, units: v.units };
     await app.repo.saveProfile($state.snapshot(app.profile));
-    const device = { ...app.device, setupDone: true };
-    if (v.sample !== app.device.sample) await app.repo.setSample(v.sample, device);
-    else await app.repo.saveDevice(device);
-    app.device = { ...device, sample: v.sample };
     onclose();
   }
 </script>

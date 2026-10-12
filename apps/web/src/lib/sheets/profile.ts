@@ -7,5 +7,4 @@ export interface ProfileValues {
   heightCm: number | null;
   units: Units;
   goals: Goals;
-  sample: boolean;
 }
