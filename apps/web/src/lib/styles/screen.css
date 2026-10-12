@@ -19,9 +19,12 @@ html:has(.screen) body {
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) max(8px, env(safe-area-inset-bottom, 0px))
     env(safe-area-inset-left, 0px);
 }
-/* Installed, there are no browser bars to make room for. iOS home-screen apps also report dvh a status bar
-   short of the screen, leaving a dead band at the bottom; lvh is the full screen */
+/* Installed, there are no browser bars to make room for. iOS home-screen apps also report dvh (and 100% of the
+   page) a status bar short of the screen, leaving a dead band at the bottom; lvh is the full screen. The page and
+   body take it too, or the body, which never scrolls, clips the screen at the short height */
 @media (display-mode: standalone) {
+  html:has(.screen),
+  html:has(.screen) body,
   .screen {
     height: 100lvh;
   }
