@@ -1,5 +1,5 @@
-/* The app's main flows in a real browser: first run, logging, editing and deleting, values stated once, the log on a
-   phone, the demo, the landing page's phone, and opening with no network. */
+/* The app's main flows in a real browser: the first-run setup, logging, editing and deleting, values stated once,
+   the log on a phone, the demo, the landing page's phone, and opening with no network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -23,7 +23,7 @@ const rows = (page: Page) => page.locator('.lentry[data-id]');
 
 test('first run, then a lift logged, edited and deleted', async ({ page }) => {
   await page.goto('/app');
-  await expect(page.getByRole('heading', { name: 'Set up LogOut' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Set up LogOut' })).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByText('In Strength, type').first()).toBeVisible();
@@ -59,6 +59,44 @@ test('first run, then a lift logged, edited and deleted', async ({ page }) => {
     .click();
   await rows(page).first().getByRole('button', { name: 'Tap again to delete' }).click();
   await expect(page.locator('.lnone')).toContainText('Nothing logged yet');
+});
+
+test.describe('the first-run setup', () => {
+  // Units are guessed from the time zone; London starts in kilograms and kilometres
+  test.use({ timezoneId: 'Europe/London' });
+
+  test('one question a screen, each with a control of its own, then the app', async ({ page }) => {
+    await page.goto('/app');
+    const setup = page.getByRole('dialog', { name: 'Set up LogOut' });
+    const next = () => setup.locator('.ob-cta .log').click();
+    await next();
+    await expect(setup.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'kg' })).toBeChecked();
+    await setup.getByRole('radiogroup', { name: 'Distance in' }).getByRole('radio', { name: 'mi' }).click();
+    await next();
+    // The ruler shows a height from the start; picking a sex glides it to that sex's average
+    const ruler = setup.getByRole('slider', { name: 'Height' });
+    await expect(ruler).toHaveAttribute('aria-valuetext', '170 centimetres');
+    await setup.getByRole('radio', { name: 'Female', exact: true }).click();
+    await expect(ruler).toHaveAttribute('aria-valuetext', '163 centimetres');
+    await ruler.focus();
+    await ruler.press('ArrowRight');
+    await expect(setup.locator('.ob-cta .log')).toHaveAccessibleName(/Female · 164 cm/);
+    await next();
+    const dial = setup.getByRole('slider', { name: 'Calories a day' });
+    await dial.focus();
+    await dial.press('PageDown');
+    await expect(dial).toHaveAttribute('aria-valuenow', '2350');
+    // Targets are the last question: the sample history is never offered
+    await setup.getByRole('button', { name: 'Start' }).click();
+    await expect(setup).toBeHidden();
+    await page.getByRole('button', { name: 'Cardio', exact: true }).click();
+    await expect(page.getByRole('button', { name: /^A number on its own is in/ })).toHaveAccessibleName(/in mi/);
+    await page.getByRole('button', { name: 'Profile and settings' }).click();
+    const profile = page.getByRole('dialog');
+    await expect(profile).not.toContainText('sample history on');
+    await expect(profile.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
+    await expect(profile.getByLabel('Centimetres')).toHaveValue('164');
+  });
 });
 
 test("a food's values, stated once, read every later line of it", async ({ page }) => {
