@@ -101,6 +101,19 @@ With `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` also set, `pnpm buil
 Sentry, matched to reports by debug IDs, and then removes them from `build/`, so stack traces show the original code
 while the site serves none of it. The browser tests' build skips the upload.
 
-Content blockers often block PostHog's and Sentry's own domains. In production, send both through your own domain
-with a reverse proxy: for PostHog, for example `/ingest/*` to `https://us.i.posthog.com/*` with `POSTHOG_HOST` set to
-it; for Sentry, a tunnel endpoint (Sentry's `tunnel` option) that forwards envelopes to the DSN's host.
+Content blockers often block PostHog's and Sentry's own domains. On Cloudflare (below), set `SENTRY_TUNNEL=/tunnel`:
+reports then go to the site itself, and its worker passes them on to Sentry. PostHog would need the same kind of
+proxy, for example `/ingest/*` to `https://us.i.posthog.com/*` with `POSTHOG_HOST` set to it.
+
+## Hosting
+
+The site is hosted on Cloudflare as static files (`apps/web/wrangler.jsonc`), with a small worker
+(`apps/web/worker/tunnel.ts`) that runs only for `/tunnel`, forwarding error reports for the project in `SENTRY_DSN`.
+
+```sh
+pnpm exec wrangler login   # once, from apps/web
+pnpm run deploy            # build, then upload the site and the worker
+```
+
+The first deploy prints the site's address. Add it to Supabase (`site_url` and `additional_redirect_urls` in
+`supabase/config.toml`, then push the config) so sign-in emails point to it.
