@@ -23,7 +23,7 @@
   <p>
     Signing in uses your email address: we send a one-time code to it. Once signed in, your entries, item names, profile and widget choices
     are stored on our server so your other devices can get them. The server stores your text as you typed it and does not read, analyse or
-    share it. Data is held with our database and authentication provider (Supabase) in India (Mumbai).
+    share it. Data is held with our database and authentication provider (Supabase) in South Korea (Seoul).
   </p>
   <p>
     Signing out removes your log from that device; it stays in your account. To delete your account and everything stored with it, use

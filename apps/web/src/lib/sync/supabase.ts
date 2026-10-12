@@ -5,7 +5,8 @@ import type { Cursor, PullPage, PushBatch, Remote, Table } from './remote.ts';
 
 export function connect(url: string, key: string): SupabaseClient {
   return createClient(url, key, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'logout.auth' }
+    // A sign-in link from the email lands back on /app with the session in the URL, which is picked up from there
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit', storageKey: 'logout.auth' }
   });
 }
 

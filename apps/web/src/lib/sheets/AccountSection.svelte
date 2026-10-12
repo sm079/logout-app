@@ -141,11 +141,11 @@
             bind:value={email}
           />
           <button type="submit" class="lact lsave" disabled={!EMAIL.test(email.trim()) || account.step === 'sending'}>
-            <Icon name="mail" /><span>{account.step === 'sending' ? 'Sending…' : 'Send code'}</span>
+            <Icon name="mail" /><span>{account.step === 'sending' ? 'Sending…' : 'Email me'}</span>
           </button>
         </form>
       {:else}
-        <p class="su-hint su-intro">Enter the code sent to {account.email}.</p>
+        <p class="su-hint su-intro">We emailed {account.email}. Enter its code here, or open its sign-in link on this device.</p>
         <form
           class="su-row"
           onsubmit={e => {

@@ -59,7 +59,11 @@ export async function sendCode(email: string): Promise<void> {
   account.email = email.trim();
   account.error = '';
   account.step = 'sending';
-  const { error } = await sb.auth.signInWithOtp({ email: account.email, options: { shouldCreateUser: true } });
+  const { error } = await sb.auth.signInWithOtp({
+    email: account.email,
+    // The email carries a code, or (with Supabase's default emails) a link back to the app
+    options: { shouldCreateUser: true, emailRedirectTo: `${location.origin}/app` }
+  });
   if (error) {
     account.step = 'email';
     account.error = error.status === 429 ? 'Too many tries. Wait a minute, then send again.' : error.message;
