@@ -515,7 +515,7 @@ button.tool:hover,
 }
 
 /* Beside the board the dock stays quiet: no halo round the composer while it has focus, LOG without its glow or
-   sheen, the day's numbers sharing the row rather than running off its end, and only the composer outlined */
+   sheen, the day's numbers spread across their row, and only the composer outlined */
 @media (min-width: 900px) {
   .screen .composer:focus-within {
     box-shadow: none;
@@ -543,15 +543,11 @@ button.tool:hover,
   }
   .screen .dayrow .ctx {
     flex: 1 0 auto;
-    padding: 8px 12px;
   }
   .screen .logs-panel,
   .screen .seg,
   .screen .dayrow .ctx:not(.set) {
     border-color: transparent;
-  }
-  .screen .dayrow .thumb {
-    display: none;
   }
 }
 
