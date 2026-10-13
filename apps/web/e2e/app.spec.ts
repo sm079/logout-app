@@ -170,6 +170,37 @@ test("a food's values, stated once, read every later line of it", async ({ page 
   await expect(page.getByRole('group', { name: 'Today so far' })).toContainText('2,030 left');
 });
 
+test('a food the tables know reads without values; a vague name suggests their entries', async ({ page }) => {
+  await start(page);
+  const field = page.getByLabel("What you did, as you'd say it");
+  // A name that points to one entry reads from it, marked as the table's
+  await field.fill('banana 120g');
+  await expect(page.locator('.mirror .ro')).toHaveText('≈107 kcal');
+  await field.fill('banana');
+  await expect(page.locator('.mirror .ro')).toHaveText('add an amount, 100g');
+
+  // One that many share lists them; taking one writes its short name, which reads as that entry
+  await field.fill('chicken breast');
+  const pop = page.getByRole('listbox', { name: 'Suggestions' });
+  await expect(page.locator('.pop-head')).toContainText('Suggestions');
+  await expect(pop.getByRole('option').first()).toContainText('kcal / 100 g');
+  const name = (await pop.getByRole('option').first().locator('.opt-name').textContent())!.trim();
+  await pop.getByRole('option').first().click();
+  await expect(field).toHaveValue(name);
+  await field.press('End');
+  await field.pressSequentially(' 150g');
+  await expect(page.locator('.mirror .ro')).toHaveText(/^≈\d+ kcal$/);
+  await page.locator('.actions button.log').click();
+  await expect(field).toHaveValue('', { timeout: 5000 });
+
+  // Its sheet says which entry the values come from
+  await showLog(page);
+  await rows(page).first().locator('[data-item]').first().click();
+  const sheet = page.getByRole('dialog');
+  await expect(sheet).toContainText('per 100 g');
+  await expect(sheet).toContainText(/USDA: Chicken.*breast/i);
+});
+
 test('a wide screen shows the log on the left, then every widget at once under a one-row calendar', async ({ page }) => {
   test.skip(test.info().project.name !== 'desktop', 'Wide screens only');
   await start(page);

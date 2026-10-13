@@ -5,6 +5,7 @@
 import { readAliased } from './aliases';
 import { daysBetween, nextDay } from './dates';
 import { clock, distText, LABEL, nf } from './format';
+import { foodBase, foodOf, type Food } from './foods';
 import { amountOf, MODE_KINDS } from './read';
 import type { Book, BookEntry, BuildOptions, Card, Day, Entry, Line, MeasureWhat, Mode, Profile, Resolved, Sum, Totals } from './types';
 import { DEFAULT_UNITS, UNITS } from './units';
@@ -59,8 +60,9 @@ export function learn(cards: Map<string, Card>, line: Line, e: Pick<Entry, 'id' 
 }
 
 /* ---------- Pass 2: resolving ---------- */
-/** Resolves a line against its card. `U` is a usual set (load × reps), so volume can stand in for effort. */
-export function settle(line: Line, card: Card | null | undefined, U: number, s: number): Resolved {
+/** Resolves a line against its card. `U` is a usual set (load × reps), so volume can stand in for effort. A food's
+    own stated values win; the food table entry its name reads as fills in grams and millilitres it has none for. */
+export function settle(line: Line, card: Card | null | undefined, U: number, s: number, food?: Food | null): Resolved {
   if (!line.key && line.kind !== 'steps') return { line, st: 'noname', v: {}, s };
   switch (line.kind) {
     case 'food': {
@@ -69,8 +71,10 @@ export function settle(line: Line, card: Card | null | undefined, U: number, s: 
       const newest = card && card.newest ? card.bases[card.newest] : null;
       const amt = f.amount || (newest ? amountOf(newest.value, newest.unit) : amountOf(1, 'piece'));
       const u = UNITS[amt.unit],
-        b = card && card.bases[u.dim];
-      if (!b) return { line, st: 'needs', v: { amount: amt, other: !!newest }, s };
+        own = card && card.bases[u.dim],
+        b = own || (food && foodBase(food, u.dim));
+      const from = food ? { food: food.name } : {};
+      if (!b) return { line, st: 'needs', v: { amount: amt, other: !!newest, ...from, ...(food && food.gml > 0 && { foodMl: true }) }, s };
       const k = (amt.value * u.f) / b.base;
       return {
         line,
@@ -82,7 +86,8 @@ export function settle(line: Line, card: Card | null | undefined, U: number, s: 
           kcal: b.kcal != null ? b.kcal * k : null,
           p: b.p != null ? b.p * k : null,
           c: b.c != null ? b.c * k : null,
-          f: b.f != null ? b.f * k : null
+          f: b.f != null ? b.f * k : null,
+          ...(own ? {} : from)
         }
       };
     }
@@ -135,6 +140,11 @@ export function readout(r: Resolved): string {
   const { line, v } = r;
   if (r.st === 'noname') return 'add a name';
   if (r.st === 'needs') {
+    // A food the tables know reads once it has an amount they have values for
+    if (line.kind === 'food' && v.food && !v.other) {
+      if (!line.f.amount) return 'add an amount, 100g';
+      return v.foodMl ? 'add grams or ml' : 'add grams';
+    }
     if (line.kind === 'food' && v.other && v.amount) {
       const d = UNITS[v.amount.unit].dim;
       return `add values for ${DIM_WORD[d] || `${LABEL[d] || d}s`}`;
@@ -144,12 +154,16 @@ export function readout(r: Resolved): string {
   }
   switch (line.kind) {
     case 'food':
-      return v.kcal != null
-        ? `${nf(v.kcal)} kcal`
-        : (['p', 'c', 'f'] as const)
-            .filter(m => v[m] != null)
-            .map(m => `${nf(v[m] as number)}${m}`)
-            .join(' ');
+      // `≈`: from a food table, not the log's own values
+      return (
+        (v.food ? '≈' : '') +
+        (v.kcal != null
+          ? `${nf(v.kcal)} kcal`
+          : (['p', 'c', 'f'] as const)
+              .filter(m => v[m] != null)
+              .map(m => `${nf(v[m] as number)}${m}`)
+              .join(' '))
+      );
     case 'strength': {
       const f = line.f;
       if (f.hold != null) return `${f.sets} × ${clock(f.hold)}`;
@@ -354,7 +368,8 @@ function bodyFatSeries(days: Map<string, Day>, profile: Profile): Map<string, nu
 /** Reads every entry and works out the cards, each line's numbers, each day's totals, recovery and body fat */
 export function build(entries: readonly Entry[], opts: BuildOptions = {}): Book {
   const profile = opts.profile || {},
-    aliases = opts.aliases || {};
+    aliases = opts.aliases || {},
+    foods = opts.foods ?? null;
   const list: BookEntry[] = entries
     .map(e => ({
       id: e.id,
@@ -383,7 +398,9 @@ export function build(entries: readonly Entry[], opts: BuildOptions = {}): Book 
   const U = usualSet(list);
   const days = new Map<string, Day>();
   for (const e of list) {
-    e.res = e.lines.map(({ line, s }) => settle(line, line.key ? cards.get(`${line.kind}:${line.key}`) : null, U, s));
+    e.res = e.lines.map(({ line, s }) =>
+      settle(line, line.key ? cards.get(`${line.kind}:${line.key}`) : null, U, s, line.kind === 'food' ? foodOf(foods, line.key) : null)
+    );
     e.sum = sum(e.res);
     let day = days.get(e.date);
     if (!day) days.set(e.date, (day = newDay(e.date)));
@@ -404,6 +421,7 @@ export function build(entries: readonly Entry[], opts: BuildOptions = {}): Book 
     profile,
     aliases,
     recovery: firstLoad && last ? recoverySeries(days, firstLoad, last) : new Map(),
-    bodyFat: bodyFatSeries(days, profile)
+    bodyFat: bodyFatSeries(days, profile),
+    foods
   };
 }

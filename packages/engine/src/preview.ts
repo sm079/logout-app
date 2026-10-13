@@ -1,6 +1,7 @@
 /* A draft (the composer's text, or an entry being edited) read before it's saved */
 import { readAliased } from './aliases';
 import { byWhen, cardFor, learn, settle, sum } from './book';
+import { foodOf } from './foods';
 import { MODE_KINDS } from './read';
 import type { Card, Line, Mode, Placement, Preview, PreviewBook, Statement } from './types';
 import type { Dim } from './units';
@@ -74,8 +75,11 @@ export function preview(book: PreviewBook | null, text: string, mode: Mode, unit
       own.set(id, tmp.get(id) ?? null);
     }
   }
-  const U = book ? book.U : 600;
-  const res = lines.map(({ line, s }) => settle(line, line.key ? own.get(`${line.kind}:${line.key}`) : null, U, s));
+  const U = book ? book.U : 600,
+    foods = book && book.foods;
+  const res = lines.map(({ line, s }) =>
+    settle(line, line.key ? own.get(`${line.kind}:${line.key}`) : null, U, s, line.kind === 'food' ? foodOf(foods, line.key) : null)
+  );
   const at = res.map(r => r.line.at).find(t => t != null);
   return { res, sum: sum(res), at: at == null ? null : at };
 }

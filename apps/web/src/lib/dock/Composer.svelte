@@ -1,12 +1,12 @@
 <!--
   The composer: a text field read as it's typed, in the mode the text reads as unless one is picked. A mirror under the
   textarea colours each token and puts each line's result at its end; a ghost completes the last name (Tab);
-  suggestions offer what was logged before; the toolbar writes lines (water, check-ins), switches the unit bare numbers
+  suggestions offer what was logged before, then foods from the food tables; the toolbar writes lines (water, check-ins), switches the unit bare numbers
   are read in, and steps the count in the caret's line.
 -->
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
-  import { detect, suggest, type Mode, type Suggestion } from '@logout/engine';
+  import { detect, foodOf, suggest, type Mode, type Suggestion } from '@logout/engine';
   import { app } from '../state/app.svelte.ts';
   import { ago, isoOf } from '../logic/dates.ts';
   import { initials } from '../logic/format.ts';
@@ -53,11 +53,14 @@
       return null;
     const tail = t.slice(draft.res[draft.res.length - 1]!.s);
     if (!NAME_ONLY.test(tail)) return null;
-    const s = suggest(app.book, scope, tail, 1)[0];
+    // Only what was logged before: a food table's entries are offered in the list, never filled in
+    const s = suggest(app.book, scope, tail, 1, false)[0];
     if (!s || s.insert.length <= tail.length || !s.insert.toLowerCase().startsWith(tail.toLowerCase())) return null;
     return { text: s.insert.slice(tail.length) };
   }
-  const known = (kind: string, key: string) => !!app.book?.cards.has(`${kind}:${key}`);
+  // Logged before, or a food the tables read
+  const known = (kind: string, key: string) =>
+    !!app.book?.cards.has(`${kind}:${key}`) || (kind === 'food' && !!foodOf(app.book?.foods, key));
 
   export function renderMirror() {
     if (!ta) return;
@@ -139,7 +142,7 @@
   });
   const popTitle = $derived.by(() => {
     if (pop.kind === 'checkin') return 'Check-in';
-    if (!scope) return pop.q ? 'Logged before' : 'Recent';
+    if (!scope) return pop.q ? 'Suggestions' : 'Recent';
     return pop.q ? info.noun : `Recent ${info.noun.toLowerCase()}`;
   });
   let popShown = $state(false),

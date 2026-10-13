@@ -9,6 +9,7 @@ import {
   type Card,
   type Day,
   type Entry,
+  type Foods,
   type Profile as EngineProfile,
   type Resolved,
   type Sum
@@ -33,6 +34,8 @@ export interface BookView {
   bodyFat: Map<string, number>;
   /** The earliest day with an entry */
   first: string | null;
+  /** The food tables, added on the page once they're loaded (the worker reads with its own, from the same data) */
+  foods?: Foods | null;
   /** How many entries are the user's own (not the sample's) */
   own: number;
 }
@@ -70,6 +73,7 @@ export class BookCore {
   private nowMin = 0;
   private sample: Entry[] = [];
   private sampleKey = '';
+  private foods: Foods | null = null;
   book: Book | null = null;
   /** Days with entries, oldest first */
   private dates: string[] = [];
@@ -107,6 +111,9 @@ export class BookCore {
     this.today = today;
     this.nowMin = nowMin;
   }
+  setFoods(f: Foods): void {
+    this.foods = f;
+  }
   private sampleEntries(): Entry[] {
     if (!this.sampleOn) return [];
     // The sample's today grows through the day; it's made again when the day or the hour changes
@@ -129,7 +136,12 @@ export class BookCore {
   /** Reads everything again and returns what the page needs */
   rebuild(rev: number): BookView {
     const sample = this.sampleEntries();
-    const book = build(sample.concat([...this.own.values()]), { today: this.today, profile: this.profile, aliases: this.aliases });
+    const book = build(sample.concat([...this.own.values()]), {
+      today: this.today,
+      profile: this.profile,
+      aliases: this.aliases,
+      foods: this.foods
+    });
     this.book = book;
     this.dates = [...book.days.keys()].sort();
     const days = new Map<string, DayView>();
