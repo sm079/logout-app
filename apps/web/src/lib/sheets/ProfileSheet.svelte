@@ -1,6 +1,6 @@
 <!--
-  The profile: the log so far, then the settings, your account and your data. The button says what SAVE will take
-  (DONE while nothing has changed); Cancel keeps what was there.
+  The profile: the log so far, then the settings, your account and your data, and which LogOut this is. The button
+  says what SAVE will take (DONE while nothing has changed); Cancel keeps what was there.
 -->
 <script lang="ts">
   import { app } from '../state/app.svelte.ts';
@@ -9,6 +9,7 @@
   import { account } from '../sync/account.svelte.ts';
   import Icon from '../ui/Icon.svelte';
   import AccountSection from './AccountSection.svelte';
+  import AppVersion from './AppVersion.svelte';
   import DataSection from './DataSection.svelte';
   import ProfileForm from './ProfileForm.svelte';
   import ProfileHero from './ProfileHero.svelte';
@@ -89,6 +90,7 @@
   <div class="pf-side">
     <ProfileForm bind:v {was} />
     <DataSection />
+    <AppVersion />
   </div>
 </Sheet>
 

@@ -15,7 +15,6 @@
   import Widgets from '../widgets/Widgets.svelte';
   import DemoBar from './DemoBar.svelte';
   import Tooltip from './Tooltip.svelte';
-  import UpdateBar from './UpdateBar.svelte';
 
   let { demo = false }: { demo?: boolean } = $props();
 
@@ -100,7 +99,6 @@
       <Onboarding {...onboard} onleave={() => (behind = true)} onend={() => (onboard = null)} />
     {/if}
     {#if app.demo && !onboard}<DemoBar />{/if}
-    <UpdateBar />
     <p class="vh" aria-live="polite">{app.announce}</p>
   </main>
 {:else if failed}

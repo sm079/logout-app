@@ -296,7 +296,7 @@ html:has(.screen) body {
   color: var(--muted);
 }
 
-/* A new version is ready: a bar over the top of the screen until it's taken */
+/* A note in a bar over the screen (the demo's sits low down) */
 .update {
   position: absolute;
   z-index: 7;

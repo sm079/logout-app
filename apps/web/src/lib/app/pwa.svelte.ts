@@ -1,5 +1,5 @@
-/* The installable, offline app: registers the service worker and says when a new version is ready.
-   A new version only takes over when the user agrees, so an open log is never reloaded under them. */
+/* The installable, offline app: registers the service worker and notes when a new version is ready (the profile
+   offers it). A new version only takes over when the user asks, so an open log is never reloaded under them. */
 
 import { track } from '../observe/analytics.ts';
 

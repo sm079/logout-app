@@ -142,6 +142,8 @@ test.describe('the profile', () => {
     await expect(hero.locator('.pf-run')).toContainText('1');
     const ok = profile.locator('.su-actions .log');
     await expect(ok).toHaveAccessibleName('Done');
+    // Which LogOut this is sits at the foot
+    await expect(profile.locator('.pf-about')).toContainText(/LogOut\s*v\d+\.\d+\.\d+/);
     // A unit converts the log so far on the spot; nothing is kept until SAVE
     await profile.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'lb' }).click();
     await expect(hero).toContainText('5.5k lb');
