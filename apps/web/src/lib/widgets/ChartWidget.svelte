@@ -164,6 +164,7 @@
 <article
   class="widget w-{type} wenter"
   class:empty={!!empty}
+  class:blank={head.blank || !!empty}
   class:scrub={cur != null}
   {style}
   style:--mc={tint[1]}

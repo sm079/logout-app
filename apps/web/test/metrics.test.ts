@@ -5,7 +5,7 @@ import { GOALS } from '#lib/data/types.ts';
 import { Timeline, unitSuffix } from '#lib/logic/metrics.ts';
 import { distFmt, measureFmt, volFmt } from '#lib/logic/format.ts';
 import type { Selection } from '#lib/logic/calendar.ts';
-import { recoveryView } from '#lib/widgets/compute.ts';
+import { fuelView, headline, recoveryView } from '#lib/widgets/compute.ts';
 
 const today = new Date(2026, 9, 11);
 const start = new Date(2026, 8, 1);
@@ -56,6 +56,19 @@ describe('metrics over the selection', () => {
   test('a metric never logged reads as such', () => {
     expect(tl.ever(tl.met.steps)).toBe(false);
     expect(tl.ever(tl.met.weight)).toBe(true);
+  });
+  test('a widget with nothing for the selection is blank', () => {
+    const S = tl.span(day(today)),
+      head = (m: keyof typeof tl.met, s = S, p = day(today)) => headline(tl, tl.met[m], s, p, true, true);
+    // Never logged, and logged but not in the selection
+    expect(head('steps')).toMatchObject({ none: true, blank: true });
+    expect(head('volume')).toMatchObject({ none: false, blank: true });
+    const before = new Date(2026, 9, 10);
+    expect(head('volume', tl.span(day(before)), day(before)).blank).toBe(false);
+    // A reading carries on until the next one
+    expect(head('weight').blank).toBe(false);
+    expect(fuelView(tl, S, GOALS).blank).toBe(false);
+    expect(fuelView(tl, tl.span(day(before)), GOALS).blank).toBe(true);
   });
   test('check-ins read without a stray space', () => {
     expect(tl.todayText(tl.met.sleep)).toBe('4.0/5 today');
