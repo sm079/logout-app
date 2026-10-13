@@ -10,3 +10,4 @@ import './dock.css';
 import './logs.css';
 import './sheets.css';
 import './onboard.css';
+import './profile.css';
