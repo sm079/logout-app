@@ -8,6 +8,7 @@
   import { cubicOut } from 'svelte/easing';
   import { nf } from '../logic/format.ts';
   import Icon from '../ui/Icon.svelte';
+  import { hold } from '../ui/hold.ts';
   import { REDUCE } from '../ui/motion.ts';
   import { KCAL, snapKcal, type Split } from './goals.ts';
 
@@ -33,7 +34,7 @@
   });
 
   // The ring holds up to the dial's most; the fill is what's chosen, in three arcs
-  const fill = $derived((wound ? kcal : 0) / KCAL.max);
+  const fill = $derived(Math.min(1, (wound ? kcal : 0) / KCAL.max));
   const arcs = $derived.by(() => {
     const out: { k: 'p' | 'c' | 'f'; len: number; start: number }[] = [];
     let start = 0;
@@ -73,29 +74,6 @@
     else return;
     e.preventDefault();
   }
-
-  // Holding − or + keeps stepping, faster after a moment
-  function hold(node: HTMLButtonElement, d: number) {
-    let t: ReturnType<typeof setTimeout> | undefined;
-    const stop = () => clearTimeout(t);
-    const go = (wait: number) => {
-      set(kcal + d * KCAL.step);
-      t = setTimeout(() => go(Math.max(40, wait * 0.8)), wait);
-    };
-    const down = (e: PointerEvent) => {
-      e.preventDefault();
-      go(380);
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      set(kcal + d * KCAL.step);
-    };
-    node.addEventListener('pointerdown', down);
-    node.addEventListener('keydown', key);
-    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) node.addEventListener(ev, stop);
-    return { destroy: stop };
-  }
 </script>
 
 <div class="dl" class:dragging>
@@ -128,6 +106,10 @@
     </g>
   </svg>
   <span class="dl-val" aria-hidden="true"><b>{nf(shown.current)}</b><small>kcal a day</small></span>
-  <button type="button" class="dl-step less press" aria-label="50 kcal less" tabindex="-1" use:hold={-1}><Icon name="minus" /></button>
-  <button type="button" class="dl-step more press" aria-label="50 kcal more" tabindex="-1" use:hold={1}><Icon name="plus" /></button>
+  <button type="button" class="dl-step less press" aria-label="50 kcal less" tabindex="-1" use:hold={() => set(kcal - KCAL.step)}
+    ><Icon name="minus" /></button
+  >
+  <button type="button" class="dl-step more press" aria-label="50 kcal more" tabindex="-1" use:hold={() => set(kcal + KCAL.step)}
+    ><Icon name="plus" /></button
+  >
 </div>

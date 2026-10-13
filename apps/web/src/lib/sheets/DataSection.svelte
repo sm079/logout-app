@@ -9,6 +9,7 @@
   import Icon from '../ui/Icon.svelte';
   import { roll } from '../ui/motion.ts';
   import { track } from '../observe/analytics.ts';
+  import { account } from '../sync/account.svelte.ts';
 
   let file: HTMLInputElement;
   let pending = $state.raw<Imported | null>(null);
@@ -46,10 +47,16 @@
   }
 </script>
 
-<div class="su-group" style="--d:280">
-  <span class="su-label">Your data</span>
+<section class="pf-card pf-data" style="--d:380;--mc:var(--fg)" aria-labelledby="pfData">
+  <header class="pf-head">
+    <span class="thumb tn-thumb"><Icon name="logs" /></span>
+    <span class="tn-card-name"
+      ><b id="pfData">Your data</b><small>Kept on this device{account.user ? ' and in your account' : ''}</small></span
+    >
+  </header>
   <div class="su-rows">
     <div class="su-row">
+      <span class="thumb su-ico"><Icon name="download" /></span>
       <span class="su-name">Export<span class="su-hint">Your entries, profile and widgets as one JSON file.</span></span>
       <button
         type="button"
@@ -61,6 +68,7 @@
       >
     </div>
     <div class="su-row" class:top={!!pending}>
+      <span class="thumb su-ico"><Icon name="upload" /></span>
       <span class="su-name">Import<span class="su-hint" class:bad>{hint}</span></span>
       {#if pending}
         <span class="su-pair">
@@ -86,6 +94,7 @@
       <input type="file" accept="application/json,.json" hidden bind:this={file} onchange={onFile} />
     </div>
     <div class="su-row">
+      <span class="thumb su-ico bad"><Icon name="trash" /></span>
       <span class="su-name"
         >Clear entries<span class="su-hint">Deletes everything you've logged here, and names you've given items. Your profile stays.</span
         ></span
@@ -107,4 +116,4 @@
       </button>
     </div>
   </div>
-</div>
+</section>

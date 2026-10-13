@@ -1,6 +1,6 @@
 /* The app's main flows in a real browser: the first-run setup, logging, editing and deleting, values stated once,
-   the log on a phone, every widget at once on a wide screen, the demo, the landing page's phone, and opening with no
-   network. */
+   the log on a phone, every widget at once on a wide screen, the profile, the demo, the landing page's phone, and
+   opening with no network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -96,7 +96,34 @@ test.describe('the first-run setup', () => {
     const profile = page.getByRole('dialog');
     await expect(profile.getByRole('switch', { name: /Sample history/ })).toHaveCount(0);
     await expect(profile.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
-    await expect(profile.getByLabel('Centimetres')).toHaveValue('164');
+    await expect(profile.getByRole('slider', { name: 'Height' })).toHaveAttribute('aria-valuetext', '164 centimetres');
+  });
+});
+
+test.describe('the profile', () => {
+  test.use({ timezoneId: 'Europe/London' });
+
+  test('the log so far, then settings that say what SAVE will take', async ({ page }) => {
+    await start(page);
+    await log(page, 'squat 5x5 100kg');
+    await page.getByRole('button', { name: 'Profile and settings' }).click();
+    const profile = page.getByRole('dialog');
+    const hero = profile.getByRole('region', { name: 'Your log so far' });
+    await expect(hero).toContainText('2.5 t');
+    await expect(hero.locator('.pf-run')).toContainText('1');
+    const ok = profile.locator('.su-actions .log');
+    await expect(ok).toHaveAccessibleName('Done');
+    // A unit converts the log so far on the spot; nothing is kept until SAVE
+    await profile.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'lb' }).click();
+    await expect(hero).toContainText('5.5k lb');
+    await profile.getByRole('button', { name: 'More protein' }).click();
+    await expect(ok).toHaveAccessibleName('Save: lb · 185 g protein');
+    await ok.click();
+    await expect(profile).toBeHidden();
+    await page.getByRole('button', { name: 'Profile and settings' }).click();
+    await expect(profile.getByRole('radiogroup', { name: 'Weight in' }).getByRole('radio', { name: 'lb' })).toBeChecked();
+    await expect(profile.getByRole('group', { name: 'Protein 185 g' })).toBeVisible();
+    await expect(ok).toHaveAccessibleName('Done');
   });
 });
 
