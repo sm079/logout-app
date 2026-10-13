@@ -20,7 +20,25 @@
   let { demo = false }: { demo?: boolean } = $props();
 
   let screen = $state<HTMLElement>(),
-    calEl = $state<HTMLElement>();
+    calEl = $state<HTMLElement>(),
+    canvas = $state<HTMLElement>();
+  // Whether the widgets run past the top or the bottom of their pane
+  let above = $state(false),
+    below = $state(false);
+  const syncEdges = () => {
+    const board = canvas?.firstElementChild as HTMLElement | null;
+    if (!canvas || !board) return;
+    above = canvas.scrollTop > 2;
+    // By the board's laid-out height, so widgets sliding in don't count as running past
+    below = canvas.scrollTop + canvas.clientHeight < board.offsetHeight - 2;
+  };
+  $effect(() => {
+    if (!canvas) return;
+    const ro = new ResizeObserver(syncEdges);
+    ro.observe(canvas);
+    if (canvas.firstElementChild) ro.observe(canvas.firstElementChild);
+    return () => ro.disconnect();
+  });
   let failed = $state('');
   // The first-run setup, over the screen; the app behind it is put together as it leaves
   let onboard = $state.raw<{ preview: boolean } | null>(null);
@@ -59,7 +77,14 @@
     {#if behind}
       <div class="behind" inert={!!app.sheet || !!onboard}>
         <Calendar bind:el={calEl} onProfile={() => (app.sheet = { kind: 'profile' })} />
-        <section class="canvas" aria-label="Summary for the selected period">
+        <section
+          class="canvas"
+          class:above
+          class:below
+          aria-label="Summary for the selected period"
+          bind:this={canvas}
+          onscroll={syncEdges}
+        >
           <Widgets />
         </section>
         <div class="glow" aria-hidden="true"></div>

@@ -1,9 +1,4 @@
 /* ---------- Logs: the dock grows up to the calendar to show what was logged, newest at the bottom ---------- */
-@property --mb {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
 /* The wrapper's height reveals a panel laid out once at full height and pinned to its bottom,
    so entries stay still while the top edge travels up. Its -6px margin cancels the dock gap while closed. */
 .logs {

@@ -8,6 +8,16 @@
   inherits: false;
   initial-value: 26px;
 }
+@property --mt {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --mb {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
 /* One dark look by choice. Surfaces step up from the page to chips; lime is the one accent. */
 :root {
   --page: #0b0c0d;
