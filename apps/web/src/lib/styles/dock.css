@@ -515,7 +515,7 @@ button.tool:hover,
 }
 
 /* Beside the board the dock stays quiet: no halo round the composer while it has focus, LOG without its glow or
-   sheen, the day's numbers spread across their row, and only the composer outlined */
+   sheen, and the log and switch told apart by their fills alone */
 @media (min-width: 900px) {
   .screen .composer:focus-within {
     box-shadow: none;
@@ -541,12 +541,8 @@ button.tool:hover,
   .screen .dock .log::after {
     display: none;
   }
-  .screen .dayrow .ctx {
-    flex: 1 0 auto;
-  }
   .screen .logs-panel,
-  .screen .seg,
-  .screen .dayrow .ctx:not(.set) {
+  .screen .seg {
     border-color: transparent;
   }
 }
