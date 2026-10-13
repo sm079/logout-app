@@ -9,6 +9,7 @@ export { readLine, readEntry, segments, valuesText, CHECKINS, MODE_KINDS, type S
 export { keyOf, resolveName } from './aliases';
 export { build, settle, sum, readout, navy, byWhen, newDay } from './book';
 export { preview } from './preview';
+export { detect } from './detect';
 export { suggest, cardMeta, cardInsert } from './suggest';
 export { nf, clock, amountText, distText } from './format';
 export { iso, parseIso, nextDay, daysBetween } from './dates';

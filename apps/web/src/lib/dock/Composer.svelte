@@ -1,11 +1,12 @@
 <!--
-  The composer: a text field read as it's typed. A mirror under the textarea colours each token and puts each line's
-  result at its end; a ghost completes the last name (Tab); suggestions offer what was logged before; the toolbar
-  writes lines (water, check-ins), switches the unit bare numbers are read in, and steps the count in the caret's line.
+  The composer: a text field read as it's typed, in the mode the text reads as unless one is picked. A mirror under the
+  textarea colours each token and puts each line's result at its end; a ghost completes the last name (Tab);
+  suggestions offer what was logged before; the toolbar writes lines (water, check-ins), switches the unit bare numbers
+  are read in, and steps the count in the caret's line.
 -->
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
-  import { suggest, type Suggestion } from '@logout/engine';
+  import { detect, suggest, type Mode, type Suggestion } from '@logout/engine';
   import { app } from '../state/app.svelte.ts';
   import { ago, isoOf } from '../logic/dates.ts';
   import { initials } from '../logic/format.ts';
@@ -17,7 +18,7 @@
   import { placeReadouts, type Overflow } from '../ui/readouts.ts';
   import { scrollRow } from '../ui/scrollrow.ts';
   import { dayWord, quickLog, readDraft } from './logging.ts';
-  import { MODES } from './modes.ts';
+  import { DEFAULT_MODE, MODE_ORDER, MODES } from './modes.ts';
 
   let { fieldH = $bindable(42), onresize, onlog }: { fieldH?: number; onresize: () => void; onlog: () => void } = $props();
 
@@ -36,6 +37,10 @@
   const info = $derived(MODES[app.mode]);
   const isFood = $derived(app.mode === 'food');
   const unitNow = $derived(app.mode === 'cardio' ? app.units.dist : app.units.load);
+  /** A mode picked on the switch holds until what's typed is logged; until then the mode follows the text */
+  let picked = $state(false);
+  /** Suggestions come from the picked mode, or from every mode */
+  const scope = $derived(picked ? app.mode : null);
 
   /* ---------- Reading the text ---------- */
   // Ghost completion for the last line while it's still only a name and the caret sits at the end
@@ -48,7 +53,7 @@
       return null;
     const tail = t.slice(draft.res[draft.res.length - 1]!.s);
     if (!NAME_ONLY.test(tail)) return null;
-    const s = suggest(app.book, app.mode, tail, 1)[0];
+    const s = suggest(app.book, scope, tail, 1)[0];
     if (!s || s.insert.length <= tail.length || !s.insert.toLowerCase().startsWith(tail.toLowerCase())) return null;
     return { text: s.insert.slice(tail.length) };
   }
@@ -57,7 +62,8 @@
   export function renderMirror() {
     if (!ta) return;
     const t = ta.value;
-    app.drafts[app.mode] = t;
+    app.typed = t;
+    if (!picked) follow(detect(app.book, t, app.units) ?? DEFAULT_MODE);
     app.draft = t.trim() ? readDraft(t, app.mode) : null;
     comp = completion();
     const draft = app.draft;
@@ -131,6 +137,11 @@
     start: 0,
     q: ''
   });
+  const popTitle = $derived.by(() => {
+    if (pop.kind === 'checkin') return 'Check-in';
+    if (!scope) return pop.q ? 'Logged before' : 'Recent';
+    return pop.q ? info.noun : `Recent ${info.noun.toLowerCase()}`;
+  });
   let popShown = $state(false),
     popIn = $state(false),
     popOut = $state(false),
@@ -161,7 +172,7 @@
     }
   }
   function openSuggest(cq: { q: string; start: number }) {
-    const items = suggest(app.book, app.mode, cq.q, 6);
+    const items = suggest(app.book, scope, cq.q, 6);
     if (!items.length) {
       closePop();
       return;
@@ -171,16 +182,16 @@
     pop = { open: true, kind: 'suggest', items, idx: wasOpen ? Math.min(pop.idx, items.length - 1) : 0, start: cq.start, q: cq.q };
     showPop(!wasOpen);
   }
-  /** From the @ button: a fresh line, and what was logged in this mode lately */
+  /** From the @ button: a fresh line, and what was logged lately (in the picked mode, if there is one) */
   function insertAt() {
     ta.focus();
     const t = ta.value;
     if (t.trim() && !/[\n,;]\s*$/.test(t)) ta.setRangeText('\n', t.length, t.length, 'end');
     ta.setSelectionRange(ta.value.length, ta.value.length);
     renderMirror();
-    const items = suggest(app.book, app.mode, '', 6);
+    const items = suggest(app.book, scope, '', 6);
     if (!items.length) {
-      app.hint(composer, `Nothing logged in ${info.label} yet`);
+      app.hint(composer, scope ? `Nothing logged in ${info.label} yet` : 'Nothing logged yet');
       return;
     }
     pop = { open: true, kind: 'suggest', items, idx: 0, start: ta.value.length, q: '' };
@@ -365,14 +376,21 @@
   }
 
   /* ---------- Mode changes and logging, driven from the action row ---------- */
-  /** Switches the text to another mode's draft */
-  export function modeChanged() {
-    closePop();
-    ta.value = app.drafts[app.mode];
-    renderMirror();
-    caret++;
+  /** Reads the text in another mode */
+  function follow(m: Mode) {
+    if (m === app.mode) return;
+    app.dir = MODE_ORDER.indexOf(m) > MODE_ORDER.indexOf(app.mode) ? 1 : -1;
+    app.mode = m;
     twStart();
     replay(ghost, 'swap');
+  }
+  /** A mode picked on the switch: the text is read in it until it's logged */
+  export function pick(m: Mode) {
+    picked = true;
+    closePop();
+    follow(m);
+    renderMirror();
+    caret++;
   }
   /** Nothing to log: the composer shakes and the placeholder nudges */
   export function nudge() {
@@ -391,7 +409,7 @@
     setTimeout(
       () => {
         ta.value = '';
-        app.drafts[app.mode] = '';
+        picked = false;
         clearing = false;
         onInput();
       },
@@ -403,7 +421,7 @@
   }
 
   onMount(() => {
-    ta.value = app.drafts[app.mode];
+    ta.value = app.typed;
     twStart();
     renderMirror();
     document.fonts?.ready.then(renderMirror);
@@ -431,7 +449,7 @@
   {#if popShown}
     <div class="mpop" class:in={popIn} class:out={popOut} class:stagger bind:this={popEl}>
       <div class="pop-head">
-        <span>{pop.kind === 'checkin' ? 'Check-in' : pop.q ? info.noun : `Recent ${info.noun.toLowerCase()}`}</span>
+        <span>{popTitle}</span>
         <span>{pop.kind === 'checkin' ? 'Tap a score' : '↑↓ to move'}</span>
       </div>
       <ul id="popList" role="listbox" aria-label="Suggestions">

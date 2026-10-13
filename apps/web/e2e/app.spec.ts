@@ -62,6 +62,35 @@ test('first run, then a lift logged, edited and deleted', async ({ page }) => {
   await expect(page.locator('.lnone')).toContainText('Nothing logged yet');
 });
 
+test('the switch follows what is typed, unless a mode is picked', async ({ page }) => {
+  await start(page);
+  const field = page.getByLabel("What you did, as you'd say it");
+  const on = (name: string) => expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await on('Food');
+  await field.fill('squat 5x5 100kg');
+  await on('Strength');
+  await field.fill('easy run 5km');
+  await on('Cardio');
+  // Water is food; a check-in leaves the switch where it rests
+  await field.fill('water 500ml');
+  await on('Food');
+  await field.fill('easy run 5km');
+  await on('Cardio');
+  await field.fill('sleep 4/5');
+  await on('Food');
+  // A picked mode holds whatever is typed, until LOG
+  await page.getByRole('button', { name: 'Strength', exact: true }).click();
+  await field.fill('rowing 2000m');
+  await on('Strength');
+  await page.locator('.actions button.log').click();
+  await expect(field).toHaveValue('', { timeout: 5000 });
+  await on('Food');
+  await showLog(page);
+  await expect(rows(page).first()).toContainText('rowing');
+  await field.fill('rowing 2000m');
+  await on('Cardio');
+});
+
 test.describe('the first-run setup', () => {
   // Units are guessed from the time zone; London starts in kilograms and kilometres
   test.use({ timezoneId: 'Europe/London' });

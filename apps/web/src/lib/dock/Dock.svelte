@@ -96,16 +96,22 @@
     segInd.style.width = `${b.offsetWidth}px`;
     segInd.style.transform = `translateX(${b.offsetLeft}px)`;
   }
-  async function setMode(m: typeof app.mode, btn: HTMLElement) {
+  function setMode(m: typeof app.mode) {
     if (m === app.mode) return;
-    app.dir = MODE_ORDER.indexOf(m) > MODE_ORDER.indexOf(app.mode) ? 1 : -1;
-    app.mode = m;
     track('mode switched', { mode: m });
-    replay(btn, 'bounce');
-    await tick();
-    placeInd();
-    composer.modeChanged();
+    composer.pick(m);
   }
+  // The switch follows the mode, whether it was picked or read from what's typed
+  let shownMode = app.mode;
+  $effect(() => {
+    const m = app.mode;
+    if (m === shownMode) return;
+    shownMode = m;
+    tick().then(() => {
+      placeInd();
+      replay(seg.querySelector('[aria-pressed="true"]'), 'bounce');
+    });
+  });
 
   /* ---------- Opening the log: the dock's top edge travels up while its bottom stays put, and it tucks under
      the calendar's bottom padding so the two read as one container ---------- */
@@ -222,7 +228,7 @@
     <div class="seg" class:no-anim={!segAnim} bind:this={seg} role="group" aria-label="What you're logging">
       <span class="seg-ind" bind:this={segInd}></span>
       {#each MODE_ORDER as m (m)}
-        <button type="button" class="seg-btn press" aria-pressed={app.mode === m} onclick={e => setMode(m, e.currentTarget)}>
+        <button type="button" class="seg-btn press" aria-pressed={app.mode === m} onclick={() => setMode(m)}>
           <span class="ic"><Icon name={MODES[m].icon} /></span><span>{MODES[m].label}</span>
         </button>
       {/each}

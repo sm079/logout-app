@@ -1,14 +1,14 @@
 <!--
-  The landing page's phone: the bottom of the app's screen. It types on its own, the real reader colouring each line,
-  until a visitor taps it; then it's theirs to type in. Nothing is kept: LOG clears the field. Its own typing runs
-  only while it's in view, starts again after the visitor leaves it empty for a while, and with reduced motion holds
-  one typed line.
+  The landing page's phone: the bottom of the app's screen. It types on its own, the real reader colouring each line
+  and the switch following what it reads, until a visitor taps it; then it's theirs to type in. Nothing is kept: LOG
+  clears the field. Its own typing runs only while it's in view, starts again after the visitor leaves it empty for a
+  while, and with reduced motion holds one typed line.
 -->
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { clock, preview, type Mode, type Sum } from '@logout/engine';
+  import { clock, detect, preview, type Mode, type Sum } from '@logout/engine';
   import { GOALS } from '../data/types.ts';
-  import { MODE_ORDER, MODES, type DayKey } from '../dock/modes.ts';
+  import { DEFAULT_MODE, MODE_ORDER, MODES, type DayKey } from '../dock/modes.ts';
   import { distFmt, nf, sumParts, volFmt } from '../logic/format.ts';
   import { esc, markup } from '../logic/markup.ts';
   import { TINTS } from '../logic/palette.ts';
@@ -18,11 +18,11 @@
   import { placeReadouts } from '../ui/readouts.ts';
 
   // What it types, in turn. `take` is how much of the name is typed before its completion is taken
-  const SCRIPT: { mode: Mode; text: string; take?: number }[] = [
-    { mode: 'strength', text: 'squat 5x5 100kg @8' },
-    { mode: 'strength', text: 'bench press 3x8 60kg', take: 3 },
-    { mode: 'cardio', text: 'easy run 8km 46:30 145bpm', take: 4 },
-    { mode: 'food', text: 'chicken breast 200g 330kcal 62p', take: 5 }
+  const SCRIPT: { text: string; take?: number }[] = [
+    { text: 'squat 5x5 100kg @8' },
+    { text: 'bench press 3x8 60kg', take: 3 },
+    { text: 'easy run 8km 46:30 145bpm', take: 4 },
+    { text: 'chicken breast 200g 330kcal 62p', take: 5 }
   ];
   const UNITS = { load: 'kg', dist: 'km' } as const;
   // How long the field sits empty after the visitor leaves it before it types on its own again
@@ -57,7 +57,9 @@
     return nf(n);
   }
 
-  let mode = $state<Mode>('strength');
+  let mode = $state<Mode>(DEFAULT_MODE);
+  /** The visitor picked a mode: it holds until LOG */
+  let picked = false;
   let dir = $state(1);
   let text = $state('');
   let completion = $state('');
@@ -131,6 +133,11 @@
     });
     replay(ghost, 'swap');
   }
+  // As in the app, the mode follows what's typed unless the visitor picked one
+  $effect(() => {
+    const m = detect(null, text, UNITS) ?? DEFAULT_MODE;
+    if (!picked) void setMode(m);
+  });
 
   // LOG keeps nothing: the field lifts away and the phone is as it was
   let resetT: ReturnType<typeof setTimeout> | undefined;
@@ -150,7 +157,10 @@
     // Unless the visitor has started a line of their own meanwhile
     clearing = text === logged;
     await new Promise(r => setTimeout(r, REDUCE ? 0 : 240));
-    if (text === logged) text = '';
+    if (text === logged) {
+      picked = false;
+      text = '';
+    }
     clearing = false;
     resetT = setTimeout(() => (busy = done = false), REDUCE ? 600 : 1200);
   }
@@ -198,10 +208,6 @@
     await wait(r, 1200);
     for (;;) {
       for (const line of SCRIPT) {
-        if (line.mode !== mode) {
-          await setMode(line.mode);
-          await wait(r, 900);
-        }
         await type(r, line);
         await wait(r, 900);
         pressed = true;
@@ -210,15 +216,15 @@
         void doLog();
         await wait(r, 1700);
       }
-      await wait(r, 600);
-      await setMode('strength');
-      await wait(r, 1400);
+      await wait(r, 2000);
     }
   }
   function start() {
     run.stopped = true;
     run = { stopped: false };
     auto = true;
+    picked = false;
+    void setMode(DEFAULT_MODE);
     script(run).catch(e => {
       if (e !== STOP) throw e;
     });
@@ -406,6 +412,7 @@
                 aria-pressed={mode === m}
                 onclick={() => {
                   takeOver(true);
+                  picked = true;
                   void setMode(m);
                 }}><span class="ic"><Icon name={MODES[m].icon} /></span><span>{MODES[m].label}</span></button
               >

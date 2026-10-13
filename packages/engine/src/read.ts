@@ -338,6 +338,15 @@ function scan(text: string, patterns: Pattern[], ctx: Ctx): Scan {
   return { text, tokens, runs };
 }
 
+// A mode's patterns without the bare number, which every mode reads
+const OWN: Record<Mode, Pattern[]> = {
+  food: FOOD.filter(p => p !== BARE),
+  strength: STRENGTH.filter(p => p !== BARE),
+  cardio: CARDIO.filter(p => p !== BARE)
+};
+/** The values only a mode's own patterns find in a line, before bare numbers are given a meaning */
+export const claims = (text: string, mode: Mode): Token[] => scan(text, OWN[mode], { kind: mode }).tokens;
+
 const CONNECT = new Set(['of', 'at', 'x', 'with', 'and', 'in', 'for', 'a', 'an', 'the', 'on', 'to', 'per']);
 const connector = (w: string) => CONNECT.has(w.toLowerCase()) || !/[\p{L}\p{N}]/u.test(w);
 interface Named {

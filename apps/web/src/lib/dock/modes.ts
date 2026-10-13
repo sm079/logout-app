@@ -73,7 +73,9 @@ export const MODES: Record<Mode, ModeInfo> = {
   }
 };
 
-export const MODE_ORDER: Mode[] = ['strength', 'cardio', 'food'];
+export const MODE_ORDER: Mode[] = ['food', 'strength', 'cardio'];
+/** What the composer reads in until what's typed says otherwise */
+export const DEFAULT_MODE: Mode = 'food';
 
 /** What a logged entry is called in its confirmation */
 export const LOGGED: Record<string, string> = {
