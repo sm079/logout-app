@@ -270,6 +270,8 @@ test('suggestions: recent items first, with what to type to repeat them', () => 
   expect(f[0]!.meta).toBe('330 kcal / 200 g');
   expect(f[0]!.insert).toBe('chicken breast 200g');
   expect(E.suggest(book, 'food', 'wat').map(x => x.name)).toEqual(['water']);
+  // Without a mode, items of every mode
+  expect(E.suggest(book, null, 'b').map(x => x.name)).toEqual(['bench press', 'back squat', 'chicken breast']);
 });
 
 test('aliases: a renamed item keys to its new name, and its text stays as typed', () => {

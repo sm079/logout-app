@@ -38,14 +38,15 @@ export function cardInsert(c: Card): string {
   return repeat ? `${c.name} ${repeat}` : c.name;
 }
 
-/** Items of a mode whose name (or a word of it) starts with the query, the newest first; then built-in lines */
-export function suggest(book: Pick<Book, 'cards'> | null, mode: Mode, query: string, n = 6): Suggestion[] {
+/** Items of a mode (of every mode when it's null) whose name (or a word of it) starts with the query, the newest
+    first; then built-in lines */
+export function suggest(book: Pick<Book, 'cards'> | null, mode: Mode | null, query: string, n = 6): Suggestion[] {
   const q = query.trim().toLowerCase().replace(/\s+/g, ' '),
     flat = (s: string) => s.replace(/[\s-]/g, '');
   const fits = (key: string) => !q || flat(key).startsWith(flat(q)) || key.split(/[\s-]/).some(w => w.startsWith(q));
   const out: Suggestion[] = [];
   if (book) {
-    const cards = [...book.cards.values()].filter(c => c.kind === mode && fits(c.key));
+    const cards = [...book.cards.values()].filter(c => (!mode || c.kind === mode) && fits(c.key));
     cards.sort(
       (a, b) =>
         Number(b.key.startsWith(q)) - Number(a.key.startsWith(q)) ||
