@@ -14,6 +14,24 @@ body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
+/* UI isn't text: no selection, no tap flash, no long-press callout. Fields and prose pages opt back in */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+[contenteditable]:not([contenteditable='false']),
+.s-doc {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
 button {
   font: inherit;
   color: inherit;
