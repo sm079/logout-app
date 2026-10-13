@@ -75,9 +75,8 @@ RESEND_API_KEY=... pnpm exec supabase config push    # auth settings and the ema
 Then put the project's URL and publishable key in `apps/web/.env` (see `.env.example`).
 
 Sign-in is by an emailed code, which works inside the installed app. Emails go out through Resend (custom SMTP in
-`config.toml`, its API key passed as `RESEND_API_KEY` when pushing config). Until a sending domain is verified in
-Resend, its shared sender only reaches the Resend account's own address; verify a domain and set `admin_email` on it
-before inviting beta users. A sign-in link, if an email carries one, is accepted too.
+`config.toml`, its API key passed as `RESEND_API_KEY` when pushing config), sent from `login@logout.fit` on the
+domain verified there. A sign-in link, if an email carries one, is accepted too.
 
 Tests: `pnpm --filter @logout/web test` runs sync against the real migrations in Postgres compiled to WASM.
 `pnpm --filter @logout/web test:live` runs it against a project (`SUPABASE_URL`, `SUPABASE_KEY` and
@@ -115,5 +114,6 @@ pnpm exec wrangler login   # once, from apps/web
 pnpm run deploy            # build, then upload the site and the worker
 ```
 
-The first deploy prints the site's address. Add it to Supabase (`site_url` and `additional_redirect_urls` in
+The site is served at `logout.fit` (a custom domain in `wrangler.jsonc`) and at its `workers.dev` address. Both are
+listed in Supabase (`site_url` and `additional_redirect_urls` in
 `supabase/config.toml`, then push the config) so sign-in emails point to it.

@@ -157,11 +157,11 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://logout.logout-web.workers.dev/app"
+site_url = "https://logout.fit/app"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://logout.logout-web.workers.dev/app", "http://localhost:5173/app", "http://localhost:4173/app", "http://localhost:5310/app"]
+additional_redirect_urls = ["https://logout.fit/app", "https://logout.logout-web.workers.dev/app", "http://localhost:5173/app", "http://localhost:4173/app", "http://localhost:5310/app"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -235,15 +235,14 @@ otp_length = 6
 otp_expiry = 900
 
 # Use a production-ready SMTP server
-# Sign-in emails go out through Resend. Until a domain is verified there, its shared sender only reaches the
-# Resend account's own address; set admin_email to an address on the verified domain before inviting anyone.
+# Sign-in emails go out through Resend, from an address on the domain verified there.
 [auth.email.smtp]
 enabled = true
 host = "smtp.resend.com"
 port = 465
 user = "resend"
 pass = "env(RESEND_API_KEY)"
-admin_email = "onboarding@resend.dev"
+admin_email = "login@logout.fit"
 sender_name = "LogOut"
 
 # Sign-in emails carry a 6-digit code to type into the app (a link opens the browser, not the installed app).
