@@ -1,5 +1,7 @@
 /* The page's side of the book: sends changes to the worker, keeps its newest read, asks it for entries */
+import { foodTable, type Foods } from '@logout/engine';
 import type { BookCore, BookView, ViewEntry } from './core.ts';
+import { loadFoodData } from './foods.ts';
 import { report } from '../observe/errors.ts';
 import { serve, type Change, type FromWorker, type Query, type ToWorker } from './protocol.ts';
 
@@ -49,8 +51,10 @@ export function inlineTransport(): Transport {
 }
 
 export class EngineClient {
-  /** The newest read; null until the first one arrives */
+  /** The newest read, with the food tables once they're loaded; null until the first read arrives */
   book = $state.raw<BookView | null>(null);
+  /** The food tables, for reading drafts and suggesting foods on the page */
+  private foods: Foods | null = null;
   /** The last error from the worker, if any */
   error = $state<string | null>(null);
   private seq = 0;
@@ -60,11 +64,20 @@ export class EngineClient {
 
   constructor(private transport: Transport) {
     transport.listen(m => this.receive(m));
+    // The food tables: the page reads drafts with them, and the worker gets the data to read every entry with
+    void loadFoodData().then(
+      data => {
+        this.foods = foodTable(data);
+        if (this.book) this.book = { ...this.book, foods: this.foods };
+        this.change({ t: 'foods', data });
+      },
+      (err: unknown) => report(err instanceof Error ? err : new Error(String(err)))
+    );
   }
 
   private receive(m: FromWorker) {
     if (m.t === 'book') {
-      this.book = m.view;
+      this.book = { ...m.view, foods: this.foods };
       this.waits = this.waits.filter(w => {
         if (w.seq > m.view.rev) return true;
         w.resolve(m.view);

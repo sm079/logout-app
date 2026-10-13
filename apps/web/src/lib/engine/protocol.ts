@@ -1,5 +1,5 @@
 /* Messages between the page and the book's worker */
-import type { Aliases, Entry, Profile } from '@logout/engine';
+import { foodTable, type Aliases, type Entry, type FoodData, type Profile } from '@logout/engine';
 import type { BookCore, BookView, CoreState } from './core.ts';
 
 /** Changes, numbered so the page can tell when a read includes them */
@@ -11,7 +11,8 @@ export type Change =
   | { t: 'aliases'; aliases: Aliases }
   | { t: 'profile'; profile: Profile }
   | { t: 'sample'; on: boolean }
-  | { t: 'clock'; today: string; nowMin: number };
+  | { t: 'clock'; today: string; nowMin: number }
+  | { t: 'foods'; data: FoodData };
 
 /** Questions, answered from the newest read */
 export type Query =
@@ -47,6 +48,9 @@ export function applyChange(core: BookCore, c: Change): void {
       break;
     case 'clock':
       core.setClock(c.today, c.nowMin);
+      break;
+    case 'foods':
+      core.setFoods(foodTable(c.data));
       break;
   }
 }

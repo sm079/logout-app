@@ -1,11 +1,11 @@
 <!--
-  An item, opened from its name in a log row: its values (a food) or what was done last time, its name, and the names
-  merged into it. A new name is kept as an alias beside the entries, so no entry's text changes; a name that is
+  An item, opened from its name in a log row: its values (a food, plus the food table entry its name reads as) or what
+  was done last time, its name, and the names merged into it. A new name is kept as an alias beside the entries, so no entry's text changes; a name that is
   already another item's merges the two. Values change by editing the line that stated them.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { amountText, keyOf, nf as enf, resolveName, type Card, type Mode } from '@logout/engine';
+  import { amountText, foodOf, keyOf, nf as enf, resolveName, type Card, type Food, type FoodSource, type Mode } from '@logout/engine';
   import type { ViewEntry } from '../engine/core.ts';
   import { app } from '../state/app.svelte.ts';
   import { ago } from '../logic/dates.ts';
@@ -20,10 +20,16 @@
   let { kind, itemKey, leaving, onclose }: { kind: Mode; itemKey: string; leaving: boolean; onclose: (focus?: boolean) => void } = $props();
 
   const NOUN: Record<Mode, string> = { food: 'Food', strength: 'Lift', cardio: 'Activity' };
+  const TABLE: Record<FoodSource, string> = { usda: 'USDA', indb: 'INDB', ifct: 'IFCT 2017' };
   let sheet: Sheet;
   let field: HTMLInputElement;
   const key = $derived(itemKey);
   const card = $derived(app.book?.cards.get(`${kind}:${key}`) ?? null);
+  // The food table entry the name reads as, while it fills in an amount the log has no values for
+  const food = $derived.by((): Food | null => {
+    const f = kind === 'food' ? foodOf(app.book?.foods, key) : null;
+    return f && card && (!card.bases.mass || (f.gml > 0 && !card.bases.volume)) ? f : null;
+  });
   let name = $state(untrack(() => app.book?.cards.get(`${kind}:${itemKey}`)?.name ?? itemKey));
 
   // The entries the sheet shows lines from: where each kind of amount's values were stated, or the last time
@@ -123,6 +129,18 @@
   <span class="thumb" style={thumbStyle(itemTint(card?.name ?? key))}>{initials(card?.name ?? key)}</span>
 {/snippet}
 
+{#snippet tableRow(f: Food)}
+  {@const macros = MACROS.map(([k, n]) => `${n[0]} ${enf(f[k], 1)}g`).join(' · ')}
+  <div class="su-row top">
+    <span class="su-name">
+      ≈{nf(f.kcal)} kcal <small>per 100 g</small>
+      <span class="su-hint">{macros}</span>
+      <span class="su-line">{TABLE[f.src]}: {f.desc}</span>
+      <span class="su-hint">Logging its kcal p c f once replaces these. Not this food? Rename it.</span>
+    </span>
+  </div>
+{/snippet}
+
 {#snippet editBtn(id: string)}
   <button type="button" class="lact" onclick={() => edit(id)}><Icon name="pencil" /><span>Edit</span></button>
 {/snippet}
@@ -161,12 +179,15 @@
             {#if from}{@render editBtn(from.id)}{/if}
           </div>
         {:else}
-          <div class="su-row">
-            <span class="su-name"
-              >Needs values<span class="su-hint">Log it once with its kcal p c f; every line of it reads from there.</span></span
-            >
-          </div>
+          {#if !food}
+            <div class="su-row">
+              <span class="su-name"
+                >Needs values<span class="su-hint">Log it once with its kcal p c f; every line of it reads from there.</span></span
+              >
+            </div>
+          {/if}
         {/each}
+        {#if food}{@render tableRow(food)}{/if}
       </div>
     </div>
   {:else if card}

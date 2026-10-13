@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { BookCore } from '#lib/engine/core.ts';
+import { foodTable } from '@logout/engine';
+import { loadFoodData } from '#lib/engine/foods.ts';
 import { serve, type FromWorker } from '#lib/engine/protocol.ts';
 
 const state = (over = {}) => ({
@@ -38,6 +40,19 @@ describe('the book keeper', () => {
     expect(core.entry('c')!.res[0]!.st).toBe('needs');
   });
 
+  test('with the food tables, a food without stated values reads from the entry its name reads as', async () => {
+    const core = new BookCore();
+    core.init(state({ entries: [{ id: 'c', date: '2026-10-11', time: 600, mode: 'food', text: 'banana 120g, oats 50g' }] }));
+    core.rebuild(1);
+    expect(core.entry('c')!.res.map(r => r.st)).toEqual(['needs', 'needs']);
+    core.setFoods(foodTable(await loadFoodData()));
+    core.rebuild(2);
+    const [banana, oats] = core.entry('c')!.res;
+    expect(banana!.v).toMatchObject({ food: 'banana' });
+    expect(banana!.v.kcal).toBeCloseTo(106.8, 5);
+    expect(oats!.v.food).toBe('oat');
+  });
+
   test('the sample history, and edits to it kept apart', () => {
     const core = new BookCore();
     core.init(state({ entries: [], sample: true }));
@@ -71,6 +86,22 @@ describe('the worker protocol', () => {
     // The deferred read finds nothing new to do
     queue.forEach(fn => fn());
     expect(out.filter(m => m.t === 'book')).toHaveLength(1);
+  });
+
+  test('the food tables come as a change, and everything is read again with them', async () => {
+    const out: FromWorker[] = [];
+    const handle = serve(
+      m => out.push(m),
+      fn => fn()
+    );
+    const core = new BookCore();
+    handle({ t: 'foods', seq: 1, data: await loadFoodData() }, () => core);
+    handle(
+      { t: 'init', seq: 2, state: state({ entries: [{ id: 'c', date: '2026-10-11', time: 600, mode: 'food', text: 'idli 100g' }] }) },
+      () => core
+    );
+    expect(out.at(-1)).toMatchObject({ t: 'book', view: { rev: 2 } });
+    expect(core.entry('c')!.res[0]!.v.food).toBe('idli');
   });
 
   test('errors come back instead of stopping the worker', () => {
