@@ -103,6 +103,15 @@
     if (e.pointerType !== 'mouse' || e.button !== 0 || !pages()) return;
     wd = { x: e.clientX, sl: wscroll.scrollLeft, t: performance.now(), moved: false };
   }
+  // On the board a light follows the mouse across a widget (drawn by the stylesheet)
+  function onHover(e: PointerEvent) {
+    if (e.pointerType !== 'mouse') return;
+    const w = (e.target as Element).closest<HTMLElement>('.widget');
+    if (!w) return;
+    const r = w.getBoundingClientRect();
+    w.style.setProperty('--mx', `${Math.round(e.clientX - r.left)}px`);
+    w.style.setProperty('--my', `${Math.round(e.clientY - r.top)}px`);
+  }
   let wheelLock = 0;
   function onWheel(e: WheelEvent) {
     if (Math.abs(e.deltaX) >= Math.abs(e.deltaY) || !pages()) return;
@@ -149,7 +158,16 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="wscroll" class:dragging class:locked bind:this={wscroll} onscroll={onScroll} onpointerdown={onDown} onwheel={onWheel}>
+<div
+  class="wscroll"
+  class:dragging
+  class:locked
+  bind:this={wscroll}
+  onscroll={onScroll}
+  onpointerdown={onDown}
+  onpointermove={onHover}
+  onwheel={onWheel}
+>
   <div class="wgrid" bind:this={wgrid}>
     <span class="wsnap" style="grid-column:1"></span>
     <span class="wsnap" style="grid-column:4"></span>

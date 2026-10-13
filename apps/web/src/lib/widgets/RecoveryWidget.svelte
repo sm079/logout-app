@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import type { DaySpan, Timeline } from '../logic/metrics.ts';
   import { MTINT } from '../logic/palette.ts';
-  import { roll } from '../ui/motion.ts';
+  import { flash, roll } from '../ui/motion.ts';
   import Chip from './Chip.svelte';
   import { C_RING, recoveryView } from './compute.ts';
 
@@ -14,7 +14,14 @@
   onMount(() => requestAnimationFrame(() => (ready = true)));
 </script>
 
-<article class="widget w-recovery wenter" class:none={r.none} {style} style:--mc={MTINT[r.state[1]][1]} aria-label={r.label}>
+<article
+  class="widget w-recovery wenter"
+  class:none={r.none}
+  {style}
+  style:--mc={MTINT[r.state[1]][1]}
+  aria-label={r.label}
+  use:flash={[`${S.a}:${S.b}`, `${r.score}|${r.hard}|${r.sleep}`]}
+>
   <Chip qual={r.qual} name={r.state[0]} tint={MTINT[r.state[1]]} icon="battery" {dir} wide />
   <div class="wbody rec-body">
     <div class="ring-wrap">

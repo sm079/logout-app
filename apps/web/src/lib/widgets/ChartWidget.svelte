@@ -7,6 +7,7 @@
   import type { Selection } from '../logic/calendar.ts';
   import type { DaySpan, Metric, Timeline } from '../logic/metrics.ts';
   import { MTINT } from '../logic/palette.ts';
+  import { flash } from '../ui/motion.ts';
   import Chip from './Chip.svelte';
   import Stat from './Stat.svelte';
   import { barPlot, heatPlot, linePlot, watchSize, type Plot } from './plots.ts';
@@ -167,6 +168,7 @@
   {style}
   style:--mc={tint[1]}
   aria-label="{metric.name} {TYPE_NAME[type]}"
+  use:flash={[`${S.a}:${S.b}:${pick.level}:${metric.id}`, `${head.num}|${head.meta}`]}
 >
   <div class="wtop">
     <Chip

@@ -1025,3 +1025,62 @@ button.wchip:hover {
     --bw: min(calc(100% - clamp(2px, 22%, 10px)), 46px);
   }
 }
+/* With a mouse, a light follows the pointer across a widget, in the widget's own colour: a soft glow over it and
+   a brighter catch along its edge */
+@media (hover: hover) {
+  @container canvas (min-width: 700px) {
+    .widget::before,
+    .widget::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s var(--ease-out);
+    }
+    .widget::after {
+      background: radial-gradient(
+        420px circle at var(--mx, 50%) var(--my, 0px),
+        color-mix(in srgb, var(--mc) 6%, transparent),
+        transparent 70%
+      );
+    }
+    .widget::before {
+      padding: 1px;
+      background: radial-gradient(
+        240px circle at var(--mx, 50%) var(--my, 0px),
+        color-mix(in srgb, var(--mc) 55%, transparent),
+        transparent 75%
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#000 0 0) content-box exclude,
+        linear-gradient(#000 0 0);
+    }
+    .widget:hover::before,
+    .widget:hover::after {
+      opacity: 1;
+      transition-duration: 0.25s;
+    }
+  }
+}
+/* Something logged or synced in changes a widget's numbers: its edge lights up in its colour and fades */
+@container canvas (min-width: 700px) {
+  .widget.flash {
+    animation: wFlash 1.6s var(--ease-out);
+  }
+}
+@keyframes wFlash {
+  12% {
+    border-color: color-mix(in srgb, var(--mc) 80%, transparent);
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--mc) 16%, transparent),
+      0 0 44px -4px color-mix(in srgb, var(--mc) 45%, transparent),
+      0 18px 40px -26px rgba(0, 0, 0, 0.8);
+  }
+}
