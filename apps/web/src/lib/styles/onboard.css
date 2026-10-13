@@ -103,6 +103,15 @@
   color: var(--fg);
   background: var(--card);
 }
+.ob-top .ob-link {
+  transition:
+    opacity 0.3s var(--ease-out),
+    background-color 0.2s,
+    color 0.2s;
+}
+.ob-link.gone {
+  opacity: 0;
+}
 .ob-round {
   flex: none;
   width: 36px;
@@ -391,6 +400,9 @@
   justify-content: center;
   text-align: center;
   padding-bottom: 6vh;
+}
+.tn-hello .tn-sub {
+  text-wrap: balance;
 }
 .tn-hello .tn-title {
   max-width: 11ch;
@@ -961,6 +973,384 @@
   height: 14px;
 }
 
+/* Sync: this phone's log, and the same log on another device once signed in */
+.tn[data-step='4'] .tn-aura {
+  left: 74%;
+  top: 30%;
+}
+.tn-after {
+  margin-top: 8px;
+}
+.dv {
+  /* The colours of the app's kinds of lines: lifts, food, cardio, water */
+  --dv-a: #e3fb5c;
+  --dv-b: #ffa25e;
+  --dv-c: #71e4d0;
+  --dv-d: #7fd3ff;
+  margin-top: 12px;
+  padding: 10px 6px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.dv svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 96px;
+  overflow: visible;
+}
+.dv-body {
+  fill: var(--dock);
+  stroke: var(--chip-hi);
+  stroke-width: 1.5;
+}
+.dv-notch {
+  fill: var(--chip-hi);
+}
+.dv-base {
+  fill: var(--chip);
+  stroke: var(--chip-hi);
+  stroke-width: 1.5;
+}
+.dv-line {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+}
+.dv-line.here {
+  fill: var(--t);
+  animation: dvGrow 0.6s var(--spring-soft) calc(420ms + var(--i) * 70ms) backwards;
+}
+/* Over there, until signed in, only where the lines will go */
+.dv-line.there {
+  fill: var(--chip);
+}
+.dv.on .dv-line.there {
+  fill: var(--t);
+  animation: dvGrow 0.6s var(--spring-soft) calc(560ms + var(--i) * 80ms) backwards;
+}
+@keyframes dvGrow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.dv-arc {
+  fill: none;
+  stroke: var(--chip-hi);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 4;
+  transition: stroke 0.5s var(--ease-out) 0.5s;
+}
+.dv.on .dv-arc {
+  stroke: var(--lime-line);
+}
+/* A pulse along the arc: once as the screen arrives, over and over while a code is on its way, once more as the
+   account is signed in to */
+.dv-pulse {
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* One dash, its gap longer than the arc, starting and ending clear of it with its round caps */
+  stroke-dasharray: 12 200;
+  stroke-dashoffset: 16;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px var(--lime-shadow));
+}
+.dv.off .dv-pulse {
+  animation: dvTravel 0.9s cubic-bezier(0.65, 0, 0.35, 1) 1.1s;
+}
+.dv.waiting .dv-pulse {
+  animation: dvWait 1.7s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.dv.on .dv-pulse {
+  animation: dvTravel 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+@keyframes dvTravel {
+  from {
+    stroke-dashoffset: 16;
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: -104;
+    opacity: 1;
+  }
+}
+@keyframes dvWait {
+  0% {
+    stroke-dashoffset: 16;
+    opacity: 1;
+  }
+  60%,
+  100% {
+    stroke-dashoffset: -104;
+    opacity: 1;
+  }
+}
+.dv-tick {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 0.6s var(--spring),
+    opacity 0.2s;
+}
+.dv.on .dv-tick {
+  transform: none;
+  opacity: 1;
+  transition-delay: 0.9s;
+}
+.dv-tick circle {
+  fill: var(--lime);
+}
+.dv-tick path {
+  fill: none;
+  stroke: var(--lime-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Signing in by code: the email, then six boxes, then a tick. Panes change as the screens do, smaller */
+.ac .tn-card-name {
+  overflow: hidden;
+}
+.ac .roll {
+  max-width: 100%;
+}
+.ac .roll > .r {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ac-change {
+  flex: none;
+  animation: acIn 0.5s var(--spring-soft) backwards;
+}
+.ac-body {
+  display: grid;
+  margin-top: 12px;
+}
+.ac-pane {
+  grid-area: 1 / 1;
+  min-width: 0;
+  animation: acIn 0.55s var(--spring-soft) backwards;
+}
+@keyframes acIn {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * 22px));
+    filter: blur(4px);
+  }
+}
+.ac-row {
+  display: flex;
+  gap: 8px;
+}
+.ac-field {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--fg);
+  /* 16px or more, or phones zoom in on focus */
+  font: 600 16px var(--sans);
+  letter-spacing: -0.01em;
+  outline: 0;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+.ac-field::placeholder {
+  color: var(--dim);
+  font-weight: 500;
+}
+.ac-field:focus {
+  border-color: var(--lime-line);
+  box-shadow: 0 0 0 3px var(--lime-ring);
+}
+/* Grey until the address is whole, then lime */
+.ac-go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--dim);
+  background: var(--chip);
+  transition:
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out),
+    box-shadow 0.35s var(--ease-out),
+    transform 0.55s var(--spring);
+}
+.ac-go.ready {
+  color: var(--lime-ink);
+  background: var(--lime);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 18px -10px var(--lime-shadow);
+}
+.ac-go:disabled {
+  cursor: default;
+}
+.ac-spin {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: acSpin 0.7s linear infinite;
+}
+@keyframes acSpin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.ac-code {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  cursor: text;
+}
+/* One real field over the boxes, so pasting, and filling the code in from the email, work as they do anywhere */
+.ac-code input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+  color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  cursor: text;
+}
+.ac-box {
+  flex: 1;
+  max-width: 50px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font: 600 22px var(--mono);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    color 0.3s var(--ease-out) calc(var(--i) * 55ms),
+    background-color 0.3s var(--ease-out) calc(var(--i) * 55ms);
+}
+.ac-box b {
+  font-weight: 600;
+  animation: acPop 0.45s var(--spring);
+}
+@keyframes acPop {
+  from {
+    opacity: 0;
+    transform: translateY(35%) scale(0.5);
+  }
+}
+.ac-box.full {
+  border-color: var(--line-strong);
+}
+.ac-box.at {
+  border-color: var(--lime-line);
+  box-shadow: 0 0 0 3px var(--lime-ring);
+}
+.ac-box.at:not(.full)::after {
+  content: '';
+  width: 2px;
+  height: 22px;
+  border-radius: 1px;
+  background: var(--lime);
+  animation: acCaret 1.1s steps(1) infinite;
+}
+@keyframes acCaret {
+  50% {
+    opacity: 0;
+  }
+}
+/* Checking: a wave runs along the boxes */
+.ac-code.checking .ac-box {
+  animation: acWave 1s ease-in-out calc(var(--i) * 70ms) infinite;
+}
+@keyframes acWave {
+  30% {
+    transform: translateY(-3px);
+    border-color: var(--lime-line);
+  }
+}
+.ac-code.bad .ac-box {
+  border-color: color-mix(in srgb, var(--bad) 55%, transparent);
+}
+.ac-code.shake {
+  animation: acShake 0.42s var(--ease-out);
+}
+@keyframes acShake {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+/* Signed in: the boxes light up one after another */
+.ac-code.ok .ac-box {
+  color: var(--lime-ink);
+  background: var(--lime);
+  border-color: var(--lime);
+  animation: acOk 0.5s var(--spring) calc(var(--i) * 55ms);
+}
+@keyframes acOk {
+  40% {
+    transform: scale(1.08);
+  }
+}
+.ac-note {
+  margin: 9px 2px 0;
+  min-height: 1.4em;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.ac-err {
+  color: var(--bad);
+}
+.ac-wait {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.ac-again {
+  font-weight: 650;
+  color: var(--lime-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--lime-line);
+  text-underline-offset: 2px;
+}
+
 /* ---------- Signing in from the setup ---------- */
 .ob-signin {
   position: absolute;
@@ -1000,6 +1390,16 @@
   font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.03em;
+}
+.ob-panel-sub {
+  margin: -4px 12px 12px;
+  max-width: 44ch;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.ob-panel .tn-card {
+  box-shadow: none;
 }
 .ob-x {
   width: 34px;

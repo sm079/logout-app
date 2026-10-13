@@ -1,8 +1,9 @@
 <!--
   The setup's screens: a welcome, then three questions, one a screen, each answered with something that moves. The
   units load a barbell and stretch a track; the height slides along a ruler; the day's calories fill a dial,
-  coloured by their split. The steps in the header, the button and the light behind carry through from screen to
-  screen, and the button always says what it will save.
+  coloured by their split. Where there's an account to have, a last screen offers one, as easily passed by as taken:
+  signing in sends the log across to another device. The steps in the header, the button and the light
+  behind carry through from screen to screen, and the button always says what it will save.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -13,9 +14,12 @@
   import { MTINT, thumbStyle, type MTintName } from '../logic/palette.ts';
   import Icon from '../ui/Icon.svelte';
   import type { IconName } from '../ui/icons.ts';
+  import { account } from '../sync/account.svelte.ts';
   import { REDUCE, roll } from '../ui/motion.ts';
   import Barbell from './Barbell.svelte';
+  import Devices from './Devices.svelte';
   import Dial from './Dial.svelte';
+  import EmailCode from './EmailCode.svelte';
   import { gramsFor, nearestSplit, SPLITS, splitOf, type SplitId } from './goals.ts';
   import Mark from './Mark.svelte';
   import Ruler from './Ruler.svelte';
@@ -28,7 +32,9 @@
     leaving = false,
     onfinish,
     onskip,
-    onsignin
+    onsignin,
+    sync = false,
+    onkeep
   }: {
     /** Where the answers start */
     values: SetupValues;
@@ -38,16 +44,24 @@
     onskip: () => void;
     /** Opens sign-in, when there's an account to sign in to */
     onsignin: (() => void) | null;
+    /** Ends with a screen offering an account */
+    sync?: boolean;
+    /** Keeps the answers as signing in begins, so a new account takes them up */
+    onkeep?: (v: SetupValues) => Promise<void>;
   } = $props();
   const start = untrack(() => values);
 
-  // Each question keeps the colour the app gives its kind of numbers
+  // Each question keeps the colour the app gives its kind of numbers. The account's screen is there from the start or
+  // not at all, so signing in on it doesn't take it away
   const STEPS: { icon: IconName; name: string; tint: MTintName }[] = [
     { icon: 'weight', name: 'Units', tint: 'training' },
     { icon: 'user', name: 'Body', tint: 'body' },
-    { icon: 'flame', name: 'Targets', tint: 'nutrition' }
+    { icon: 'flame', name: 'Targets', tint: 'nutrition' },
+    ...(untrack(() => sync) ? [{ icon: 'cloud', name: 'Sync', tint: 'sleep' } as const] : [])
   ];
-  const ACTION = ['BEGIN', 'NEXT', 'NEXT', 'START'];
+  const SYNC = STEPS.length === 4 ? 4 : -1;
+  const ACTION = ['BEGIN', ...STEPS.slice(1).map(() => 'NEXT'), 'START'];
+  const TITLES = ['', 'How do you measure?', 'For body fat.', 'Your daily targets.', 'Keep your log safe.'];
   const MACROS = [
     ['p', 'Protein'],
     ['c', 'Carbs'],
@@ -118,20 +132,20 @@
       return heightSet ? h : 'Leave for now';
     }
     if (step === 3) return `${nf(kcal)} kcal · ${grams.p} g protein`;
+    if (step === SYNC) return account.user ? account.user.email : 'Without an account';
     return '';
   });
 
-  function finish() {
-    onfinish({
-      sex,
-      heightCm: keepHeight ? Math.round(heightCm * 10) / 10 : null,
-      units: { ...units },
-      goals: { kcal, ...grams, water, steps }
-    });
-  }
+  const answers = (): SetupValues => ({
+    sex,
+    heightCm: keepHeight ? Math.round(heightCm * 10) / 10 : null,
+    units: { ...units },
+    goals: { kcal, ...grams, water, steps }
+  });
+  const finish = () => onfinish(answers());
 
   /* ---------- Moving between screens ---------- */
-  // Leaving the welcome, its three steps fly up into the header and become the progress
+  // Leaving the welcome, its steps fly up into the header and become the progress
   let flying = $state(false);
   async function go(d: number) {
     if (step + d > STEPS.length) return finish();
@@ -207,7 +221,8 @@
     </ol>
     <div class="ob-top-acts">
       {#if onsignin && step === 0}<button type="button" class="ob-link press" onclick={onsignin}>Sign in</button>{/if}
-      <button type="button" class="ob-link press" onclick={onskip}>Skip</button>
+      <!-- On the account's screen, the button is the way past it: Skip there would read as skipping the account -->
+      <button type="button" class="ob-link press" class:gone={step === SYNC} inert={step === SYNC} onclick={onskip}>Skip</button>
     </div>
   </header>
 
@@ -218,7 +233,9 @@
           <div class="tn-hello">
             <div class="tn-mark"><Mark size={96} still={REDUCE} /></div>
             <h1 class="tn-title enter" id="tnTitle" tabindex="-1" style="--d:760" bind:this={titleEl}>Let’s tune LogOut to you.</h1>
-            <p class="tn-sub enter" style="--d:840">Three quick things. Change any of them later.</p>
+            <p class="tn-sub enter" style="--d:840">
+              {SYNC > 0 ? 'Three quick things, then sync if you want it.' : 'Three quick things.'} Change any of them later.
+            </p>
             <ul class="tn-coming" class:flown={flying}>
               {#each STEPS as s, i (s.name)}
                 <li class="enter" style="--d:{960 + i * 80};{tint(s.tint)}"><span class="ic"><Icon name={s.icon} /></span>{s.name}</li>
@@ -228,7 +245,7 @@
         {:else}
           <header class="tn-head">
             <h1 class="tn-title tn-in" id="tnTitle" tabindex="-1" style="--k:0" bind:this={titleEl}>
-              {step === 1 ? 'How do you measure?' : step === 2 ? 'For body fat.' : 'Your daily targets.'}
+              {TITLES[step]}
             </h1>
             <p class="tn-sub tn-in" style="--k:1">
               {#if step === 1}
@@ -236,8 +253,10 @@
                 <code><i class="tk-name">run</i> <i class="tk-v">5</i></code>, are read in these.
               {:else if step === 2}
                 LogOut works it out from your sex and height. Leave them if you’d rather.
-              {:else}
+              {:else if step === 3}
                 Drag round the ring. Food counts down from these.
+              {:else}
+                Sign in to back it up and have it on every device you use. It’s optional: without an account, it all stays on this one.
               {/if}
             </p>
           </header>
@@ -277,7 +296,7 @@
               </div>
               <Ruler bind:value={heightCm} {imperial} label="Height" onpick={() => (heightSet = true)} />
             </div>
-          {:else}
+          {:else if step === 3}
             <div class="tn-card tn-cal tn-in" style="--k:2">
               <div class="tn-card-head">
                 {@render head('flame', 'nutrition', 'Calories', 'And how they split')}
@@ -313,6 +332,16 @@
                 () => (steps = nudge(steps, -1, 500, 1000, 40000)),
                 () => (steps = nudge(steps, 1, 500, 1000, 40000))
               )}
+            </div>
+          {:else}
+            <div class="tn-card tn-in" style="--k:2">
+              <div class="tn-card-head">
+                {@render head('cloud', 'sleep', 'Sync', 'Backed up, and on every device')}
+              </div>
+              <Devices state={account.user ? 'on' : account.step === 'email' ? 'off' : 'waiting'} />
+            </div>
+            <div class="tn-in tn-after" style="--k:3">
+              <EmailCode beforeVerify={() => onkeep?.(answers()) ?? Promise.resolve()} />
             </div>
           {/if}
         {/if}
