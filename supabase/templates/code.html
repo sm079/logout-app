@@ -1,16 +1,68 @@
 <!doctype html>
-<html>
-  <body style="margin:0;padding:32px 16px;background:#0f1012;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#eeeef0">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="supported-color-schemes" content="dark">
+    <title>Your LogOut code</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700;800&family=Geist+Mono:wght@600&display=swap" rel="stylesheet">
+    <style>
+      :root { color-scheme: dark; }
+      body { margin:0; padding:0; -webkit-text-size-adjust:100%; }
+      @media (max-width:480px) {
+        .shell { padding:28px 12px !important; }
+        .card { padding:28px 22px !important; }
+        .code { font-size:30px !important; letter-spacing:0.2em !important; text-indent:0.2em !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#0b0c0d;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#0b0c0d;">{{ .Token }} is your LogOut code. It works once, for 15 minutes.&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0b0c0d;">
       <tr>
-        <td align="center">
-          <table role="presentation" width="420" cellpadding="0" cellspacing="0" style="max-width:420px;background:#1b1c1f;border-radius:24px;padding:28px">
-            <tr><td style="font-size:20px;font-weight:700;letter-spacing:-0.02em">Your sign-in code</td></tr>
-            <tr><td style="padding:8px 0 20px;font-size:14px;line-height:1.5;color:#8b8c93">Type it into LogOut to sign in. It works once, for 15 minutes.</td></tr>
+        <td class="shell" align="center" style="padding:48px 16px;font-family:'Geist',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#eeeef0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px;">
             <tr>
-              <td style="padding:16px;border-radius:16px;background:#dcf82a;color:#161a02;font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:30px;font-weight:700;letter-spacing:0.3em;text-align:center">{{ .Token }}</td>
+              <td style="padding:0 4px 20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="vertical-align:middle;"><img src="https://logout.logout-web.workers.dev/icon-192.png" width="32" height="32" alt="" style="display:block;width:32px;height:32px;border:0;border-radius:8px;"></td>
+                    <td style="vertical-align:middle;padding-left:10px;font-size:18px;font-weight:800;letter-spacing:-0.03em;color:#eeeef0;">LogOut</td>
+                  </tr>
+                </table>
+              </td>
             </tr>
-            <tr><td style="padding-top:20px;font-size:12px;line-height:1.5;color:#8b8c93">If you didn't ask for it, you can ignore this email.</td></tr>
+            <tr>
+              <td class="card" style="padding:36px 32px;background:#1b1c1f;border:1px solid #26272b;border-radius:24px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#dcf82a;">Sign in</td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:8px;font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-0.03em;color:#eeeef0;">Your code is ready</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0 28px;font-size:15px;line-height:1.55;color:#8b8c93;">Type it into LogOut to finish signing in.</td>
+                  </tr>
+                  <tr>
+                    <td class="code" align="center" style="padding:22px 12px;background:#dcf82a;border-radius:16px;font-family:'Geist Mono','SFMono-Regular',Menlo,Consolas,monospace;font-size:36px;line-height:1;font-weight:600;letter-spacing:0.25em;text-indent:0.25em;color:#161a02;">{{ .Token }}</td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding-top:14px;font-size:13px;line-height:1.5;color:#8b8c93;">Works once &middot; expires in 15 minutes</td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:28px;"><div style="height:1px;line-height:1px;font-size:0;background:#2a2b2f;">&nbsp;</div></td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top:20px;font-size:13px;line-height:1.55;color:#8b8c93;">Didn't ask for this? You can safely ignore this email. Nobody can sign in without the code.</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:24px 16px 0;font-size:12px;line-height:1.5;color:#55565c;">LogOut &middot; A fitness log you type into.</td>
+            </tr>
           </table>
         </td>
       </tr>
