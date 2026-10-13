@@ -1,6 +1,6 @@
 <!--
-  The app: one screen. Phones get it edge to edge; from 600px a centred column; from 900px two panes, the calendar
-  and widgets on the left and the log above the composer on the right.
+  The app: one screen. Phones get it edge to edge; from 600px a centred column; from 900px two panes, the log above
+  the composer on the left and the calendar and widgets on the right.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
