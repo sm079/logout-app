@@ -20,13 +20,22 @@ export function startValues(): SetupValues {
   };
 }
 
-export async function finishSetup(v: SetupValues): Promise<void> {
+/** Saves the answers as the profile. Kept just before signing in, they go up with a new account's first sync; an
+    account that has a profile already brings its own down over them. */
+export async function keepAnswers(v: SetupValues): Promise<void> {
   app.profile = { ...app.profile, sex: v.sex, heightCm: v.heightCm, goals: { ...v.goals }, units: { ...v.units } };
   await app.repo.saveProfile($state.snapshot(app.profile));
+}
+
+/** Ends the setup with its answers. Signed in on the way, they were kept as sign-in began and the account's own
+    profile has the last word, so they aren't saved again over it. */
+export async function finishSetup(v: SetupValues): Promise<void> {
+  const signedIn = !!account.user;
+  if (!signedIn) await keepAnswers(v);
   app.device = { ...app.device, setupDone: true };
   await app.repo.saveDevice($state.snapshot(app.device));
   app.firstRun = false;
-  track('setup finished', { sex: !!v.sex, height: !!v.heightCm, lb: v.units.load === 'lb', mi: v.units.dist === 'mi' });
+  track('setup finished', { sex: !!v.sex, height: !!v.heightCm, lb: v.units.load === 'lb', mi: v.units.dist === 'mi', signedIn });
 }
 
 export async function skipSetup(): Promise<void> {

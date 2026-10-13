@@ -16,6 +16,11 @@ import { Syncer, type SyncResult } from './sync.ts';
 
 export type SyncStatus = 'idle' | 'syncing' | 'offline' | 'error';
 
+/** Digits in an emailed code, as the project's auth settings have it (`otp_length` in supabase/config.toml) */
+export const CODE_LENGTH = 6;
+/** Seconds the project makes an address wait between codes */
+export const CODE_WAIT = 60;
+
 export const account = $state({
   /** A project is configured, so signing in is possible */
   configured: !!(SUPABASE_URL && SUPABASE_KEY),
@@ -23,6 +28,8 @@ export const account = $state({
   /** Signing in: asking for an email, waiting for its code, or checking it */
   step: 'email' as 'email' | 'sending' | 'code' | 'verifying',
   email: '',
+  /** When the last code went out */
+  sentAt: 0,
   error: '',
   status: 'idle' as SyncStatus,
   lastSync: 0,
@@ -69,6 +76,7 @@ export async function sendCode(email: string): Promise<void> {
     account.error = error.status === 429 ? 'Too many tries. Wait a minute, then send again.' : error.message;
     return;
   }
+  account.sentAt = Date.now();
   account.step = 'code';
 }
 
