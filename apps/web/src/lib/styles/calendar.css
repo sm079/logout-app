@@ -56,6 +56,9 @@
   align-items: stretch;
   gap: 6px;
 }
+.cal-end {
+  display: contents;
+}
 .cal-chip {
   flex: 1;
   min-width: 0;
@@ -525,4 +528,56 @@
 }
 .band.faded {
   opacity: 0;
+}
+
+/* ---------- Wide screens ----------
+   Beside the log the strip needs less height: shorter cells. From 1240px there's room for one toolbar row: the title
+   at the left, the strip centred, the scale and profile at the right. */
+@media (min-width: 900px) {
+  .screen .cell {
+    height: 56px;
+  }
+  .screen .cc {
+    gap: 4px;
+  }
+}
+@media (min-width: 1240px) {
+  .screen .cal {
+    display: grid;
+    grid-template-columns: minmax(max-content, 1fr) minmax(0, 640px) minmax(max-content, 1fr);
+    align-items: stretch;
+  }
+  .screen .cal-top {
+    display: contents;
+  }
+  .screen .cal-chip {
+    grid-area: 1 / 1;
+    justify-self: start;
+    min-width: 220px;
+  }
+  .screen .tray {
+    grid-area: 1 / 2;
+  }
+  .screen .cal-end {
+    grid-area: 1 / 3;
+    justify-self: end;
+    display: flex;
+    gap: 6px;
+  }
+  .screen .scale button {
+    width: 34px;
+  }
+  .screen .avatar {
+    width: 58px;
+  }
+  .screen .cell {
+    height: 44px;
+  }
+  .screen .cc {
+    gap: 3px;
+  }
+  /* All twelve months fit the widest strip */
+  .screen .lvl-m .cell {
+    --cw: 46px;
+  }
 }

@@ -1,6 +1,7 @@
 <!--
   The calendar: a title chip (tap returns to today), the D · W · M · Y scale, and a strip of days, weeks, months or
-  years with session marks. Tap selects one; hold another to select the span between them.
+  years with session marks. Tap selects one; hold another to select the span between them. A wide screen puts them
+  all in one toolbar row.
 -->
 <script lang="ts">
   import { onMount, tick, untrack } from 'svelte';
@@ -461,17 +462,20 @@
         </h1>
       </span>
     </div>
-    <div class="scale drop" class:no-anim={!scaleAnim} bind:this={scaleEl} role="radiogroup" aria-label="Calendar view" style="--d:170">
-      <span class="scale-ind" bind:this={scaleInd}></span>
-      {#each LEVELS as l (l)}
-        <button type="button" role="radio" aria-checked={level === l} aria-label={LEVEL_NAME[l]} onclick={() => setLevel(l)}
-          >{l.toUpperCase()}</button
-        >
-      {/each}
+    <!-- Only a wide screen lays these out as a group; elsewhere they sit in the row as they are -->
+    <div class="cal-end">
+      <div class="scale drop" class:no-anim={!scaleAnim} bind:this={scaleEl} role="radiogroup" aria-label="Calendar view" style="--d:170">
+        <span class="scale-ind" bind:this={scaleInd}></span>
+        {#each LEVELS as l (l)}
+          <button type="button" role="radio" aria-checked={level === l} aria-label={LEVEL_NAME[l]} onclick={() => setLevel(l)}
+            >{l.toUpperCase()}</button
+          >
+        {/each}
+      </div>
+      <button type="button" class="avatar press drop" style="--d:210" aria-label="Profile and settings" onclick={onProfile}>
+        <span class="ic"><Icon name="user" /></span>
+      </button>
     </div>
-    <button type="button" class="avatar press drop" style="--d:210" aria-label="Profile and settings" onclick={onProfile}>
-      <span class="ic"><Icon name="user" /></span>
-    </button>
   </div>
   <div class="tray">
     <!-- svelte-ignore a11y_no_static_element_interactions -->
