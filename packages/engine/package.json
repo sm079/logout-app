@@ -6,11 +6,13 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./foods.json": "./data/foods.json"
   },
   "scripts": {
     "test": "vitest run",
-    "check": "tsc --project tsconfig.json"
+    "check": "tsc --project tsconfig.json",
+    "foods": "node scripts/foods.ts"
   },
   "devDependencies": {
     "@logout/sample": "workspace:*",
