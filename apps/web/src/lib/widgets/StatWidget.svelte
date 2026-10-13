@@ -6,7 +6,7 @@
   import { MTINT } from '../logic/palette.ts';
   import Chip from './Chip.svelte';
   import Stat from './Stat.svelte';
-  import { linePlot, type LineData, type Plot } from './plots.ts';
+  import { linePlot, watchSize, type LineData, type Plot } from './plots.ts';
   import { headline, sparkView } from './compute.ts';
   import { picker, togglePicker } from './picker.svelte.ts';
 
@@ -30,6 +30,9 @@
 
   onMount(() => {
     plot = linePlot(host, { axes: false, area: true, id: `sp-${id}` });
+    return watchSize(host, () => {
+      if (plot && spark.pts.length && !head.none) plot.render(spark);
+    });
   });
   $effect(() => {
     const d = spark;
