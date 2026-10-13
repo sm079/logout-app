@@ -201,13 +201,6 @@ html:has(.screen) body {
     transform: scale(0.8);
   }
 }
-/* On a wide screen colour is kept for what it says: tiles go neutral and only their glyphs keep a tint */
-@media (min-width: 900px) {
-  .screen .behind .thumb {
-    background: var(--chip);
-    box-shadow: none;
-  }
-}
 .ico.swap {
   animation: icoSwap 0.6s var(--spring);
 }

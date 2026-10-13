@@ -71,7 +71,7 @@
   });
 </script>
 
-<div class="scroller dayrow" role="group" aria-label="{when} so far" use:scrollRow>
+<div class="scroller" role="group" aria-label="{when} so far" use:scrollRow>
   {#each [0, 1, 2, 3] as i (i)}
     {@const c = row[i]}
     {#if c}
