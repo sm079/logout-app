@@ -5,6 +5,7 @@ import { GOALS } from '#lib/data/types.ts';
 import { Timeline, unitSuffix } from '#lib/logic/metrics.ts';
 import { distFmt, measureFmt, volFmt } from '#lib/logic/format.ts';
 import type { Selection } from '#lib/logic/calendar.ts';
+import { recoveryView } from '#lib/widgets/compute.ts';
 
 const today = new Date(2026, 9, 11);
 const start = new Date(2026, 8, 1);
@@ -75,5 +76,29 @@ describe('numbers in the units picked', () => {
     expect(volFmt(12300)).toEqual(['12.3', 't']);
     expect(distFmt(5000, 'mi')).toBe('3.11 mi');
     expect(measureFmt('waist', 81.28, 'lb')).toBe('waist 32.0 in');
+  });
+});
+
+describe('readiness over the week behind the selection', () => {
+  const tl = timeline([
+    e('2026-10-08', 'squat 5x5 100kg @8', 'strength'),
+    e('2026-10-10', 'deadlift 3x5 140kg @9', 'strength'),
+    e('2026-10-11', 'sleep 4/5')
+  ]);
+
+  test("a day ends the week, and only it is the selection's", () => {
+    const r = recoveryView(tl, tl.span(day(today)));
+    expect(r.week.map(d => d.day).join('')).toBe('MTWTFSS');
+    expect(r.week.map(d => d.on)).toEqual([false, false, false, false, false, false, true]);
+    expect(r.week[6]!.v).toBe(r.score);
+    expect(r.week[6]!.state).toBe(r.state[1]);
+  });
+  test('a week selected is all lit', () => {
+    const p: Selection = { level: 'd', from: new Date(2026, 9, 5), to: today, n: 7, anchor: today };
+    expect(recoveryView(tl, tl.span(p)).week.every(d => d.on)).toBe(true);
+  });
+  test('days before the log has anything read as nothing', () => {
+    const r = recoveryView(tl, tl.span(day(new Date(2026, 8, 2))));
+    expect(r.week.slice(0, 5).every(d => d.v == null && d.state === 'none')).toBe(true);
   });
 });

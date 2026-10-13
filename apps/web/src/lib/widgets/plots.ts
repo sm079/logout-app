@@ -431,7 +431,9 @@ export function heatPlot(host: HTMLElement): Plot<HeatData> {
     const W = host.clientWidth,
       Hh = host.clientHeight;
     const g = d.ncols > 30 ? 1.5 : 2;
-    const cs = Math.max(3, Math.min(12, (W - (d.ncols - 1) * g) / d.ncols, (Hh - 14 - 6 * g) / 7));
+    // Squares stay small on a phone; a wide board lets them grow (--hmax)
+    const most = parseFloat(getComputedStyle(host).getPropertyValue('--hmax')) || 12;
+    const cs = Math.max(3, Math.min(most, (W - (d.ncols - 1) * g) / d.ncols, (Hh - 14 - 6 * g) / 7));
     gridEl.style.setProperty('--cs', `${cs.toFixed(2)}px`);
     gridEl.style.setProperty('--g', `${g}px`);
     if (d.key !== key) {

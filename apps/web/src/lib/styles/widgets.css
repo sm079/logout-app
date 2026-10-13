@@ -1,4 +1,4 @@
-/* ---------- Widgets: a 6 × 2 grid, paged two columns at a time ---------- */
+/* ---------- Widgets: a 6 × 2 grid paged two columns at a time; on a wide pane, a 4 × 3 board ---------- */
 @property --mc {
   syntax: '<color>';
   inherits: true;
@@ -12,7 +12,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  container-type: size;
+  container: canvas / size;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -61,17 +61,6 @@
   scroll-snap-stop: always;
   pointer-events: none;
 }
-@container (min-width: 760px) {
-  .wscroll {
-    --cw: calc((100cqw - 48px) / 4);
-    --ch: max(168px, min(calc((100cqh - 24px) / 2), 340px));
-  }
-}
-@container (min-width: 1200px) {
-  .wscroll {
-    --cw: calc((100cqw - 72px) / 6);
-  }
-}
 
 /* A widget is built like the composer dock: an outer surface, a chip, and a raised panel (radii 22 → 15/16) */
 .widget {
@@ -88,6 +77,9 @@
   background: var(--dock);
   border: 1px solid var(--line);
   box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.8);
+  grid-column: var(--gc);
+  grid-row: var(--gr);
+  --d: var(--dm);
   transition: --mc 0.6s var(--ease-out);
 }
 .wenter {
@@ -98,6 +90,29 @@
   from {
     opacity: 0;
     transform: translateY(16px) scale(0.97);
+  }
+}
+/* The board: a pane this wide only comes with the two-pane layout. Every widget shows at once and the grid fills
+   the pane's height; a short window scrolls it rather than squeezing the rows. */
+@container canvas (min-width: 700px) {
+  .wscroll {
+    flex: 1 0 auto;
+    overflow: visible;
+    scroll-snap-type: none;
+    touch-action: auto;
+  }
+  .wgrid {
+    flex: 1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(184px, 1fr));
+  }
+  .wsnap {
+    display: none;
+  }
+  .widget {
+    grid-column: var(--bc);
+    grid-row: var(--br);
+    --d: var(--db);
   }
 }
 .wtop {
@@ -903,4 +918,110 @@ button.wchip:hover {
 .opt[data-cur] .opt-check {
   opacity: 1;
   transform: none;
+}
+
+/* ---------- The board's widgets: sized to their cell rather than to a phone ---------- */
+.rweek {
+  display: none;
+}
+@container canvas (min-width: 700px) {
+  .wnum {
+    font-size: 25px;
+  }
+  .stat-body .wnum {
+    font-size: 30px;
+  }
+  /* Readiness: the ring grows with the card, with the week under it and the numbers at the foot */
+  .rec-body {
+    container-type: size;
+    gap: 14px;
+    padding-top: 18px;
+  }
+  .ring-wrap {
+    width: min(100%, 44cqh, 216px);
+    container-type: inline-size;
+  }
+  .ring-num {
+    font-size: clamp(32px, 23cqi, 50px);
+  }
+  .ring-num small {
+    font-size: clamp(14px, 8cqi, 18px);
+  }
+  .rweek {
+    flex: 1;
+    max-height: 92px;
+    min-height: 40px;
+    display: flex;
+    gap: 5px;
+  }
+  .rday {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .rbar {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--chip) 70%, transparent);
+    overflow: hidden;
+  }
+  .rbar i {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 5px;
+    background: var(--sc, var(--chip-hi));
+    opacity: 0.35;
+    transition:
+      height 0.9s var(--spring-soft),
+      opacity 0.3s,
+      background-color 0.4s;
+    transition-delay: calc(var(--k) * 45ms);
+  }
+  .rday.on .rbar i {
+    opacity: 1;
+    box-shadow: 0 0 12px -2px color-mix(in srgb, var(--sc, transparent) 50%, transparent);
+  }
+  .rday small {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    line-height: 1;
+    color: var(--dim);
+    transition: color 0.3s;
+  }
+  .rday.on small {
+    color: var(--fg);
+  }
+  /* Fuel: a ring as tall as the panel, and the macros gathered beside it */
+  .fuel-body {
+    gap: clamp(16px, 4cqw, 32px);
+    padding-inline: 16px clamp(14px, 3cqw, 24px);
+  }
+  .fring {
+    width: min(100cqh, 176px);
+    container-type: inline-size;
+  }
+  .g-pct {
+    font-size: clamp(22px, 17cqi, 30px);
+  }
+  .mrows {
+    justify-content: center;
+    gap: clamp(12px, 9cqh, 24px);
+  }
+  .mbar {
+    height: 7px;
+  }
+  /* The activity grid's squares can grow to fill a wider cell; bars keep a slender width however wide it is */
+  .heat {
+    --hmax: 17;
+  }
+  .bslot {
+    --bw: min(calc(100% - clamp(2px, 22%, 10px)), 46px);
+  }
 }

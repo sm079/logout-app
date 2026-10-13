@@ -1,4 +1,4 @@
-<!-- Recovery: a ring of readiness, worked out from recent training and sleep -->
+<!-- Recovery: a ring of readiness, worked out from recent training and sleep, and on the wide board the week behind it -->
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { DaySpan, Timeline } from '../logic/metrics.ts';
@@ -33,6 +33,15 @@
         <span class="ring-num"><span class="roll" use:roll={{ text: r.none ? '—' : r.score, dir }}></span><small>%</small></span>
         <span class="ring-sub roll" use:roll={{ text: r.sub, dir }}></span>
       </div>
+    </div>
+    <!-- The week up to the selection's end, a bar a day; only the wide board has room for it -->
+    <div class="rweek" aria-hidden="true">
+      {#each r.week as d, i (i)}
+        <span class="rday" class:on={d.on} data-s={d.state} style="--k:{i}">
+          <span class="rbar"><i style="height:{ready && d.v != null ? Math.max(4, d.v) : 0}%"></i></span>
+          <small>{d.day}</small>
+        </span>
+      {/each}
     </div>
     <div class="rrows">
       <div class="rrow"><span>Hard sets 3d</span><b><span class="roll" use:roll={{ text: r.hard, dir }}></span></b></div>
