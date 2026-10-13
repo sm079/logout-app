@@ -1,7 +1,9 @@
 /* Which mode a draft is written in, so the composer can follow what's typed. Each line counts for the modes whose
    own values it has (`3x8` for a lift, `8km` for a run, `30p` for a meal), the name it was logged under before, and a
-   word that names a lift, an activity or a food. Water counts for food; check-ins and measurements count for none. */
+   word that names a lift, an activity or a food (or a name a food table reads). Water counts for food; check-ins and
+   measurements count for none. */
 import { resolveName } from './aliases';
+import { foodOf } from './foods';
 import { claims, readLine, segments } from './read';
 import type { Book, Mode, Token } from './types';
 import { DEFAULT_UNITS, type Units } from './units';
@@ -10,6 +12,8 @@ import { DEFAULT_UNITS, type Units } from './units';
 const ORDER: Mode[] = ['food', 'strength', 'cardio'];
 const KNOWN = 4,
   NAMED = 3,
+  // A name a food table reads counts a little less than one of the words below, so a lift's name still wins
+  TABLED = 2,
   WATER = 1;
 
 /** What a value says about its line. A load or a duration says less, since two modes read one */
@@ -87,20 +91,23 @@ function named(key: string, words: ReadonlySet<string>): boolean {
   return ws.some((w, i) => forms(w).some(f => words.has(f)) || (i > 0 && forms(ws[i - 1] + w).some(f => words.has(f))));
 }
 
+type DetectBook = Pick<Book, 'cards' | 'aliases'> & Partial<Pick<Book, 'foods'>>;
+
 /** How strongly one line reads as a mode */
-function lineScore(book: Pick<Book, 'cards' | 'aliases'> | null, text: string, mode: Mode, units: Units): number {
+function lineScore(book: DetectBook | null, text: string, mode: Mode, units: Units): number {
   let n = 0;
   for (const t of claims(text, mode)) n += weight(t);
   const key = readLine(text, mode, units).key;
   if (key) {
-    const known = book && book.cards.has(`${mode}:${resolveName(mode, key, book.aliases).key}`);
-    n += known ? KNOWN : named(key, WORDS[mode]) ? NAMED : 0;
+    const to = book ? resolveName(mode, key, book.aliases).key : key;
+    const known = book && book.cards.has(`${mode}:${to}`);
+    n += known ? KNOWN : named(key, WORDS[mode]) ? NAMED : mode === 'food' && foodOf(book && book.foods, to) ? TABLED : 0;
   }
   return n;
 }
 
 /** The mode a draft reads as, or null when nothing in it says */
-export function detect(book: Pick<Book, 'cards' | 'aliases'> | null, text: string, units: Units = DEFAULT_UNITS): Mode | null {
+export function detect(book: DetectBook | null, text: string, units: Units = DEFAULT_UNITS): Mode | null {
   const score: Record<Mode, number> = { food: 0, strength: 0, cardio: 0 };
   for (const seg of segments(text)) {
     // Water, check-ins and measurements read the same in every mode

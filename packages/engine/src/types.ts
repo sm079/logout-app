@@ -1,3 +1,4 @@
+import type { Food, Foods, FoodSource } from './foods';
 import type { Dim, UnitName, Units } from './units';
 
 /** The three things the composer logs; each reads a line with its own patterns */
@@ -196,6 +197,11 @@ export interface Values {
   amount?: Amount;
   /** A food with values for another kind of amount only */
   other?: boolean;
+  /** The food table entry (its short name) the name reads as: the values came from it, or would with an amount it
+      has values for */
+  food?: string;
+  /** That entry has values for millilitres too */
+  foodMl?: boolean;
   worked?: MacroKey | null;
   kcal?: number | null;
   p?: number | null;
@@ -331,15 +337,18 @@ export interface Book {
   aliases: Aliases;
   recovery: Map<string, number>;
   bodyFat: Map<string, number>;
+  /** The food tables names are read against, when they're loaded */
+  foods: Foods | null;
 }
 
 /** What a draft needs from the book to be read like a logged entry */
-export type PreviewBook = Pick<Book, 'cards' | 'U' | 'aliases'>;
+export type PreviewBook = Pick<Book, 'cards' | 'U' | 'aliases'> & { foods?: Foods | null };
 
 export interface BuildOptions {
   today?: string;
   profile?: Profile;
   aliases?: Aliases;
+  foods?: Foods | null;
 }
 
 export interface Preview {
@@ -362,4 +371,8 @@ export interface Suggestion {
   insert: string;
   last: string | null;
   kind: Mode | 'any';
+  /** A food table entry's, never logged */
+  src?: FoodSource;
 }
+
+export type { Food, Foods, FoodSource };
