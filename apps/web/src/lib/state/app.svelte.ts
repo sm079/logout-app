@@ -1,4 +1,4 @@
-/* The app's shared state: settings, the selected period, the composer's mode and drafts, what's open */
+/* The app's shared state: settings, the selected period, the composer's mode and text, what's open */
 import type { Mode, Preview, Units } from '@logout/engine';
 import { EngineClient, inlineTransport, workerTransport, type Transport } from '../engine/client.svelte.ts';
 import { SAMPLE_JOINED } from '../engine/sample-start.ts';
@@ -7,6 +7,7 @@ import { load, Repo } from '../data/repo.ts';
 import { DEFAULT_DEVICE, defaultProfile, type Aliases, type Device, type Profile, type WidgetPicks } from '../data/types.ts';
 import { addDays, clockNow, fromIso, isoOf, startOfDay } from '../logic/dates.ts';
 import type { Selection } from '../logic/calendar.ts';
+import { DEFAULT_MODE } from '../dock/modes.ts';
 
 export type Sheet = { kind: 'profile' } | { kind: 'item'; itemKind: Mode; key: string; from: HTMLElement | null };
 
@@ -37,8 +38,9 @@ class App {
   pick = $state.raw<Selection>(dayPick(today0()));
   /** Which way the last change moved, for rolling text */
   dir = $state(1);
-  mode = $state<Mode>('strength');
-  drafts = $state<Record<Mode, string>>({ strength: '', cardio: '', food: '' });
+  mode = $state<Mode>(DEFAULT_MODE);
+  /** The composer's text, kept while it's away */
+  typed = $state('');
   /** The composer's text as read, or null while it's empty */
   draft = $state.raw<Preview | null>(null);
   logsOpen = $state(false);
