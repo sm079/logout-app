@@ -249,11 +249,11 @@ sender_name = "LogOut"
 # Sign-in emails carry a 6-digit code to type into the app (a link opens the browser, not the installed app).
 # Custom templates need the custom SMTP sender above.
 [auth.email.template.magic_link]
-subject = "Your LogOut code: {{ .Token }}"
+subject = "{{ .Token }} is your LogOut code"
 content_path = "./supabase/templates/code.html"
 
 [auth.email.template.confirmation]
-subject = "Your LogOut code: {{ .Token }}"
+subject = "{{ .Token }} is your LogOut code"
 content_path = "./supabase/templates/code.html"
 
 # Uncomment to customize email template
