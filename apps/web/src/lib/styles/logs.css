@@ -211,6 +211,12 @@
   width: 14px;
   height: 14px;
 }
+/* With a mouse on a wide screen, an entry's edit button waits for the pointer or focus to come to the entry */
+@media (min-width: 900px) and (hover: hover) {
+  .screen .lentry:not(:hover, :focus-within) .lbtn {
+    opacity: 0;
+  }
+}
 
 /* Inline edit: same type as the entry, so the text doesn't shift; ring borrowed from the focused composer */
 .lentry.editing {

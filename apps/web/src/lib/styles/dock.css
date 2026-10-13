@@ -514,6 +514,47 @@ button.tool:hover,
   transition: stroke-dashoffset 0.45s 0.12s var(--ease-out);
 }
 
+/* Beside the board the dock stays quiet: no halo round the composer while it has focus, LOG without its glow or
+   sheen, the day's numbers sharing the row rather than running off its end, and only the composer outlined */
+@media (min-width: 900px) {
+  .screen .composer:focus-within {
+    box-shadow: none;
+  }
+  .screen .dock .log {
+    box-shadow:
+      0 3px 0 var(--lime-edge),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  }
+  .screen .dock .log:hover {
+    box-shadow:
+      0 4px 0 var(--lime-edge),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  }
+  .screen .dock .log:active {
+    box-shadow:
+      0 1px 0 var(--lime-edge),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  }
+  .screen .dock .log::after {
+    display: none;
+  }
+  .screen .dayrow .ctx {
+    flex: 1 0 auto;
+    padding: 8px 12px;
+  }
+  .screen .logs-panel,
+  .screen .seg,
+  .screen .dayrow .ctx:not(.set) {
+    border-color: transparent;
+  }
+  .screen .dayrow .thumb {
+    display: none;
+  }
+}
+
 /* ---------- Toast, popover, tooltip ---------- */
 .toast {
   position: absolute;

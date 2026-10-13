@@ -1045,6 +1045,51 @@ button.wchip:hover {
     --bw: min(calc(100% - clamp(2px, 22%, 10px)), 46px);
   }
 }
+/* ---------- Beside the log: calmer widgets ----------
+   Each widget is one surface: its chip and body sit straight on the card, with everything inset alike. Colour is
+   left to the data, with no glows and nothing that loops. The gutters match the panes'. */
+@media (min-width: 900px) {
+  .screen .wscroll {
+    --cw: calc((100cqw - 36px) / 2);
+    --ch: max(168px, calc((100cqh - 24px) / 2));
+    padding: 12px 12px 0;
+    scroll-padding-inline: 12px;
+  }
+  .screen .wgrid {
+    gap: 12px;
+  }
+  .screen .widget {
+    --card: var(--dock);
+  }
+  .screen .wchip:not(.open),
+  .screen .wbody {
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .screen .wchip {
+    padding-left: 7px;
+  }
+  .screen .wbody,
+  .screen .fuel-body {
+    padding-inline: 7px;
+  }
+  .screen .lline,
+  .screen .spark .lline,
+  .screen .ring-arc,
+  .screen .f-seg {
+    filter: none;
+  }
+  .screen .rday.on .rbar i {
+    box-shadow: none;
+  }
+  .screen .lhalo {
+    display: none;
+  }
+  .screen .bar.live,
+  .screen .hc.live {
+    animation: none;
+  }
+}
 /* A widget with nothing for the selection steps back, greyed out until the pointer or focus comes to it */
 @media (min-width: 900px) {
   .screen .widget.blank > * {
