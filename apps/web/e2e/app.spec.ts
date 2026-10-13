@@ -168,13 +168,16 @@ test("a food's values, stated once, read every later line of it", async ({ page 
   await expect(page.getByRole('group', { name: 'Today so far' })).toContainText('2,030 left');
 });
 
-test('a wide screen shows every widget at once, under a one-row calendar', async ({ page }) => {
+test('a wide screen shows the log on the left, then every widget at once under a one-row calendar', async ({ page }) => {
   test.skip(test.info().project.name !== 'desktop', 'Wide screens only');
   await start(page);
   const widgets = page.locator('.widget');
   await expect(widgets).toHaveCount(7);
   for (const w of await widgets.all()) await expect(w).toBeInViewport({ ratio: 1 });
-  expect((await page.locator('.cal').boundingBox())!.height).toBeLessThan(90);
+  const cal = (await page.locator('.cal').boundingBox())!;
+  expect(cal.height).toBeLessThan(90);
+  const dock = (await page.locator('.dock').boundingBox())!;
+  expect(dock.x + dock.width).toBeLessThanOrEqual(cal.x);
 });
 
 test('the demo opens on years of sample history', async ({ page }) => {

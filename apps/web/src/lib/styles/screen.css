@@ -1,6 +1,6 @@
 /* ---------- Screen: the app fills the window, clear of notches and home bars ----------
    Up to 600px wide it's the phone layout edge to edge; up to 900px, the same layout in a centred column;
-   wider, two panes: the calendar and widgets on the left, the log and composer on the right. */
+   wider, two panes: the log and composer on the left, the calendar and widgets on the right. */
 /* The app is one fixed screen; the page behind it never scrolls */
 html:has(.screen),
 html:has(.screen) body {
@@ -39,20 +39,20 @@ html:has(.screen) body {
 @media (min-width: 900px) {
   .screen {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(360px, 34vw, 460px);
+    grid-template-columns: clamp(360px, 34vw, 460px) minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
   /* Under .screen, so these outrank the phone layout's rules further down */
   .screen .cal {
-    grid-area: 1 / 1;
+    grid-area: 1 / 2;
   }
   .screen .canvas {
-    grid-area: 2 / 1;
+    grid-area: 2 / 2;
   }
-  /* The dock is the right pane, and the log in it is always open */
+  /* The dock is the left pane, and the log in it is always open */
   .screen .dock {
-    grid-area: 1 / 2 / 3 / 3;
-    margin: 8px 8px 0 0;
+    grid-area: 1 / 1 / 3 / 2;
+    margin: 8px 0 0 8px;
   }
   .screen .logs {
     flex: 1;
@@ -68,8 +68,8 @@ html:has(.screen) body {
     display: none;
   }
   .screen .glow {
-    left: auto;
-    right: 0;
+    left: 0;
+    right: auto;
     width: clamp(360px, 34vw, 460px);
   }
 }
@@ -337,20 +337,7 @@ html:has(.screen) body {
 }
 @media (min-width: 900px) {
   .demo-bar {
-    left: calc((100% - clamp(360px, 34vw, 460px)) / 2);
-    bottom: 16px;
-  }
-}
-.demo-bar {
-  top: auto;
-  bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 150px);
-}
-.demo-bar a.lact {
-  text-decoration: none;
-}
-@media (min-width: 900px) {
-  .demo-bar {
-    left: calc((100% - clamp(360px, 34vw, 460px)) / 2);
+    left: calc((100% + clamp(360px, 34vw, 460px)) / 2);
     bottom: 16px;
   }
 }

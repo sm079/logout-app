@@ -21,6 +21,26 @@
 .canvas::-webkit-scrollbar {
   display: none;
 }
+/* Beside the log, where the widgets run past the pane its edges fade; a board that fits has none */
+@media (min-width: 900px) {
+  .canvas {
+    --mt: 0px;
+    --mb: 0px;
+    transition:
+      --mt 0.35s var(--ease-out),
+      --mb 0.35s var(--ease-out);
+  }
+  .canvas:is(.above, .below) {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 var(--mt), #000 calc(100% - var(--mb)), transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 var(--mt), #000 calc(100% - var(--mb)), transparent);
+  }
+  .canvas.above {
+    --mt: 28px;
+  }
+  .canvas.below {
+    --mb: 28px;
+  }
+}
 .wscroll {
   --cw: calc((100cqw - 24px) / 2);
   --ch: max(168px, calc((100cqh - 24px) / 2));
