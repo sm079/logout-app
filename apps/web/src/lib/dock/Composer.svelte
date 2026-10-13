@@ -244,8 +244,8 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (pop.open && pop.kind === 'suggest') {
-      if (e.key === 'ArrowDown') return void (e.preventDefault(), movePop(1));
-      if (e.key === 'ArrowUp') return void (e.preventDefault(), movePop(-1));
+      if (e.key === 'ArrowDown') return void (e.preventDefault(), movePop(-1));
+      if (e.key === 'ArrowUp') return void (e.preventDefault(), movePop(1));
       if (e.key === 'Enter' || e.key === 'Tab') return void (e.preventDefault(), choose(pop.idx));
       if (e.key === 'Escape') return void (e.preventDefault(), closePop());
     }
