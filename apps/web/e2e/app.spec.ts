@@ -178,6 +178,11 @@ test('a wide screen shows the log on the left, then every widget at once under a
   expect(cal.height).toBeLessThan(90);
   const dock = (await page.locator('.dock').boundingBox())!;
   expect(dock.x + dock.width).toBeLessThanOrEqual(cal.x);
+  // Widgets with nothing to show are greyed out until something is logged for them
+  await expect(page.locator('.widget.blank')).toHaveCount(7);
+  await log(page, 'oats 100g 380kcal 13p 67c 7f');
+  await expect(page.locator('.w-fuel')).not.toHaveClass(/blank/);
+  await expect(page.locator('.widget.blank')).toHaveCount(6);
 });
 
 test('the demo opens on years of sample history', async ({ page }) => {

@@ -1045,6 +1045,20 @@ button.wchip:hover {
     --bw: min(calc(100% - clamp(2px, 22%, 10px)), 46px);
   }
 }
+/* A widget with nothing for the selection steps back, greyed out until the pointer or focus comes to it */
+@media (min-width: 900px) {
+  .screen .widget.blank > * {
+    opacity: 0.4;
+    filter: grayscale(1);
+    transition:
+      opacity 0.4s var(--ease-out),
+      filter 0.4s var(--ease-out);
+  }
+  .screen .widget.blank:is(:hover, :focus-within) > * {
+    opacity: 1;
+    filter: none;
+  }
+}
 /* With a mouse, a light follows the pointer across a widget, in the widget's own colour: a soft glow over it and
    a brighter catch along its edge */
 @media (hover: hover) {

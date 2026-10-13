@@ -44,6 +44,7 @@
 <article
   class="widget w-stat wenter"
   class:empty={head.none}
+  class:blank={head.blank}
   {style}
   style:--mc={tint[1]}
   aria-label="{metric.name}: {head.num} {head.unit}. {head.meta}"

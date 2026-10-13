@@ -17,6 +17,7 @@
 <article
   class="widget w-recovery wenter"
   class:none={r.none}
+  class:blank={r.none}
   {style}
   style:--mc={MTINT[r.state[1]][1]}
   aria-label={r.label}

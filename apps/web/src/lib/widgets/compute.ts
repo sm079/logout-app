@@ -32,6 +32,8 @@ export interface Headline {
   up: boolean | null;
   /** Never logged */
   none: boolean;
+  /** Nothing logged in the selection, or ever */
+  blank: boolean;
   /** Markup to show in place of the chart, if any */
   empty: string;
 }
@@ -59,7 +61,8 @@ export function headline(
   const dl = none
     ? { d: 0, text: m.id === 'bodyfat' && !bodyKnown ? 'Needs a profile' : 'Not logged yet' }
     : override || tl.spanDelta(m, S, wantTotal, p);
-  return { qual: sv.q, name: m.name, num, unit, meta: dl.text, d: dl.d, up: m.up, none, empty: none ? emptyHTML(m, bodyKnown) : '' };
+  const blank = none || sv.v == null || (!!m.amount && !sv.v);
+  return { qual: sv.q, name: m.name, num, unit, meta: dl.text, d: dl.d, up: m.up, none, blank, empty: none ? emptyHTML(m, bodyKnown) : '' };
 }
 
 /* ---------- Line chart ---------- */
@@ -341,6 +344,8 @@ export interface FuelView {
   goal: number;
   pct: string;
   meta: string;
+  /** Nothing eaten in the selection */
+  blank: boolean;
   grams: number[];
   /** Each macro's share of the ring as [visible length, offset] */
   segs: { len: number; off: number; on: boolean }[];
@@ -374,6 +379,7 @@ export function fuelView(tl: Timeline, S: DaySpan, goals: Goals): FuelView {
     goal,
     pct: `${Math.round((kcal / goal) * 100)}%`,
     meta: kcal <= goal ? `${nf(goal - kcal)} left` : `${nf(kcal - goal)} over`,
+    blank: !kcal && grams.every(g => !g),
     grams,
     segs,
     label: `Calories ${nf(kcal)} of ${nf(goal)}. ${MACROS.map(([k, name], i) => `${name} ${nf(grams[i]!)} of ${nf(goals[k])} grams`).join(', ')}`

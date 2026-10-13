@@ -19,6 +19,7 @@
 
 <article
   class="widget w-fuel wenter"
+  class:blank={f.blank}
   {style}
   style:--mc={MTINT.nutrition[1]}
   aria-label={f.label}
