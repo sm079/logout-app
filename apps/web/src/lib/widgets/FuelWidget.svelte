@@ -5,7 +5,7 @@
   import { nf } from '../logic/format.ts';
   import type { DaySpan, Timeline } from '../logic/metrics.ts';
   import { MTINT } from '../logic/palette.ts';
-  import { roll } from '../ui/motion.ts';
+  import { flash, roll } from '../ui/motion.ts';
   import Chip from './Chip.svelte';
   import Stat from './Stat.svelte';
   import { C_RING, fuelView, MACROS } from './compute.ts';
@@ -17,7 +17,13 @@
   onMount(() => requestAnimationFrame(() => (ready = true)));
 </script>
 
-<article class="widget w-fuel wenter" {style} style:--mc={MTINT.nutrition[1]} aria-label={f.label}>
+<article
+  class="widget w-fuel wenter"
+  {style}
+  style:--mc={MTINT.nutrition[1]}
+  aria-label={f.label}
+  use:flash={[`${S.a}:${S.b}`, `${f.kcal}|${f.grams.join()}`]}
+>
   <div class="wtop">
     <Chip qual={f.qual} name="Calories" tint={MTINT.nutrition} icon="flame" {dir} />
     <Stat num={nf(f.kcal)} unit="kcal" meta={f.meta} {dir} />

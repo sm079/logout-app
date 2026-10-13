@@ -13,6 +13,28 @@ export interface Plot<D> {
   mark(i: number): void;
 }
 
+/** Calls `redraw` once a frame at most while the host changes size (a window resized, a hidden chart shown).
+    The size it starts at is the one it was first drawn at. Returns a function that stops watching. */
+export function watchSize(host: HTMLElement, redraw: () => void): () => void {
+  let raf = 0,
+    size = '';
+  const ro = new ResizeObserver(([e]) => {
+    const r = e!.contentRect,
+      now = `${Math.round(r.width)}x${Math.round(r.height)}`;
+    if (now === size) return;
+    const first = !size;
+    size = now;
+    if (first) return;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(redraw);
+  });
+  ro.observe(host);
+  return () => {
+    cancelAnimationFrame(raf);
+    ro.disconnect();
+  };
+}
+
 /* ---------- Line chart ----------
    Resampled to a fixed number of points so any two periods or metrics can morph into each other. Samples follow a
    monotone cubic through the readings, so the curve is smooth but never overshoots a reading. The line runs from the
@@ -111,6 +133,7 @@ export function linePlot(host: HTMLElement, { axes, area, id }: { axes: boolean;
   let raf = 0,
     revealRaf = 0,
     tickKey = '',
+    gridKey = '',
     ctx = { x: 0, a: 1 },
     scrubX: number | null = null;
   let geo: { X: (t: number) => number; Y: (v: number) => number; pts: LinePoint[]; padT: number; base: number } | null = null;
@@ -220,16 +243,19 @@ export function linePlot(host: HTMLElement, { axes, area, id }: { axes: boolean;
     target.push(d.band && d.band[1] > d.band[0] ? 0.4 : 1);
     geo = { X, Y, pts: P, padT, base: h - padB };
     if (axes) {
-      const tk = ticks.join() + '|' + h;
-      if (tk !== tickKey) {
-        tickKey = tk;
+      // New ticks fade in; a new size only redraws them
+      const tk = ticks.join(),
+        gk = `${tk}|${w}x${h}`;
+      if (gk !== gridKey) {
+        gridKey = gk;
         E.grid.innerHTML = ticks
           .map(
             v =>
               `<line x1="0" x2="${w - padR + 4}" y1="${Math.round(Y(v)) + 0.5}" y2="${Math.round(Y(v)) + 0.5}"/><text x="${w}" y="${Y(v) + 3}" text-anchor="end">${v >= 1000 ? compact(v) : v.toFixed(dec)}</text>`
           )
           .join('');
-        if (cur) replay(E.grid, 'fadein');
+        if (cur && tk !== tickKey) replay(E.grid, 'fadein');
+        tickKey = tk;
       }
       const [a, b] = d.xl ?? ['', ''];
       E.xl.innerHTML = `<text x="0" y="${h - 3}">${a}</text><text x="${w - padR}" y="${h - 3}" text-anchor="end">${b}</text>`;
@@ -238,19 +264,24 @@ export function linePlot(host: HTMLElement, { axes, area, id }: { axes: boolean;
     E.span.setAttribute('height', String(Math.max(0, h - padT - padB + 4)));
     E.span.style.opacity = d.band ? '1' : '0';
     E.halo.classList.toggle('on', !!d.live && !REDUCE);
-    const from = cur && cur.w === w && cur.h === h ? (live ?? cur.target) : null;
+    // Only the first draw wipes in; a new size takes the new shape at once
+    const drawn = !!cur,
+      from = cur && cur.w === w && cur.h === h ? (live ?? cur.target) : null;
     cur = { w, h, target };
     cancelAnimationFrame(raf);
     const base = h - padB;
     if (!from || REDUCE) {
       live = null;
       apply(target, base);
-      if (!from && !REDUCE) {
+      if (!drawn && !REDUCE) {
         E.end.classList.remove('pop');
         void E.end.getBBox();
         E.end.classList.add('pop');
         reveal(w + 60);
-      } else E.clip.setAttribute('width', String(w + 60));
+      } else {
+        cancelAnimationFrame(revealRaf);
+        E.clip.setAttribute('width', String(w + 60));
+      }
       return;
     }
     const t0 = performance.now(),
@@ -400,7 +431,9 @@ export function heatPlot(host: HTMLElement): Plot<HeatData> {
     const W = host.clientWidth,
       Hh = host.clientHeight;
     const g = d.ncols > 30 ? 1.5 : 2;
-    const cs = Math.max(3, Math.min(12, (W - (d.ncols - 1) * g) / d.ncols, (Hh - 14 - 6 * g) / 7));
+    // Squares stay small on a phone; a wide board lets them grow (--hmax)
+    const most = parseFloat(getComputedStyle(host).getPropertyValue('--hmax')) || 12;
+    const cs = Math.max(3, Math.min(most, (W - (d.ncols - 1) * g) / d.ncols, (Hh - 14 - 6 * g) / 7));
     gridEl.style.setProperty('--cs', `${cs.toFixed(2)}px`);
     gridEl.style.setProperty('--g', `${g}px`);
     if (d.key !== key) {

@@ -1,5 +1,5 @@
 <!--
-  The widgets: a 6 × 2 grid paged two columns at a time (four or six columns show at once on a wide pane).
+  The widgets: a 6 × 2 grid paged two columns at a time, or on a wide pane a 4 × 3 board that shows them all at once.
   Widgets only display; every number comes from the log.
 -->
 <script lang="ts">
@@ -31,10 +31,28 @@
     { id: 'heat', type: 'heat', col: 4, row: 0, w: 2, h: 1, metric: 'exercise' },
     { id: 'bars', type: 'bars', col: 4, row: 1, w: 2, h: 1, metric: 'steps' }
   ];
+  // The wide pane's board: readiness down the left, food and weight beside it, the cards on the right, and the two
+  // long-range charts across the bottom
+  const BOARD: Record<string, [col: number, row: number, w: number, h: number]> = {
+    recovery: [0, 0, 1, 2],
+    fuel: [1, 0, 2, 1],
+    stat1: [3, 0, 1, 1],
+    line: [1, 1, 2, 1],
+    stat2: [3, 1, 1, 1],
+    heat: [0, 2, 2, 1],
+    bars: [2, 2, 2, 1]
+  };
   // Grid columns, with an empty column after each page so pages snap cleanly
   const gcol = (c: number) => c + Math.floor(c / 2) + 1;
-  const styleOf = (c: Cfg, k: number) =>
-    `grid-column:${gcol(c.col)} / span ${c.w};grid-row:${c.row + 1} / span ${c.h};--d:${300 + Math.min(k, 3) * 70}`;
+  // Both placements ride along; the stylesheet picks one by the pane's width. On the board, widgets enter
+  // diagonally from the top left.
+  const styleOf = (c: Cfg, k: number) => {
+    const [bc, br, bw, bh] = BOARD[c.id]!;
+    return (
+      `--gc:${gcol(c.col)} / span ${c.w};--gr:${c.row + 1} / span ${c.h};--dm:${300 + Math.min(k, 3) * 70};` +
+      `--bc:${bc + 1} / span ${bw};--br:${br + 1} / span ${bh};--db:${260 + (bc + br) * 60}`
+    );
+  };
 
   let wscroll: HTMLDivElement, wgrid: HTMLDivElement;
   let dragging = $state(false),
@@ -78,14 +96,25 @@
     if (!locked) reset++;
     if (picker.target) closePicker();
   }
+  // The board shows every widget, so there's nothing to page
+  const pages = () => wscroll.scrollWidth > wscroll.clientWidth + 2;
   let wd: { x: number; sl: number; t: number; moved: boolean } | null = null;
   function onDown(e: PointerEvent) {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || !pages()) return;
     wd = { x: e.clientX, sl: wscroll.scrollLeft, t: performance.now(), moved: false };
+  }
+  // On the board a light follows the mouse across a widget (drawn by the stylesheet)
+  function onHover(e: PointerEvent) {
+    if (e.pointerType !== 'mouse') return;
+    const w = (e.target as Element).closest<HTMLElement>('.widget');
+    if (!w) return;
+    const r = w.getBoundingClientRect();
+    w.style.setProperty('--mx', `${Math.round(e.clientX - r.left)}px`);
+    w.style.setProperty('--my', `${Math.round(e.clientY - r.top)}px`);
   }
   let wheelLock = 0;
   function onWheel(e: WheelEvent) {
-    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY) || !pages()) return;
     // A tall pane scrolls the widgets up and down; otherwise the wheel pages
     const canvas = wscroll.parentElement!;
     if (canvas.scrollHeight > canvas.clientHeight + 2) return;
@@ -129,7 +158,16 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="wscroll" class:dragging class:locked bind:this={wscroll} onscroll={onScroll} onpointerdown={onDown} onwheel={onWheel}>
+<div
+  class="wscroll"
+  class:dragging
+  class:locked
+  bind:this={wscroll}
+  onscroll={onScroll}
+  onpointerdown={onDown}
+  onpointermove={onHover}
+  onwheel={onWheel}
+>
   <div class="wgrid" bind:this={wgrid}>
     <span class="wsnap" style="grid-column:1"></span>
     <span class="wsnap" style="grid-column:4"></span>

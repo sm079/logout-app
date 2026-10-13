@@ -1,5 +1,6 @@
 /* The app's main flows in a real browser: the first-run setup, logging, editing and deleting, values stated once,
-   the log on a phone, the demo, the landing page's phone, and opening with no network. */
+   the log on a phone, every widget at once on a wide screen, the demo, the landing page's phone, and opening with no
+   network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -109,6 +110,15 @@ test("a food's values, stated once, read every later line of it", async ({ page 
   await expect(rows(page).nth(1).locator('.lmeta')).toContainText('190 kcal');
   // The day so far counts both
   await expect(page.getByRole('group', { name: 'Today so far' })).toContainText('2,030 left');
+});
+
+test('a wide screen shows every widget at once, under a one-row calendar', async ({ page }) => {
+  test.skip(test.info().project.name !== 'desktop', 'Wide screens only');
+  await start(page);
+  const widgets = page.locator('.widget');
+  await expect(widgets).toHaveCount(7);
+  for (const w of await widgets.all()) await expect(w).toBeInViewport({ ratio: 1 });
+  expect((await page.locator('.cal').boundingBox())!.height).toBeLessThan(90);
 });
 
 test('the demo opens on years of sample history', async ({ page }) => {

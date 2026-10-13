@@ -7,9 +7,10 @@
   import type { Selection } from '../logic/calendar.ts';
   import type { DaySpan, Metric, Timeline } from '../logic/metrics.ts';
   import { MTINT } from '../logic/palette.ts';
+  import { flash } from '../ui/motion.ts';
   import Chip from './Chip.svelte';
   import Stat from './Stat.svelte';
-  import { barPlot, heatPlot, linePlot, type Plot } from './plots.ts';
+  import { barPlot, heatPlot, linePlot, watchSize, type Plot } from './plots.ts';
   import { barView, headline, heatView, lineView, type ScrubPoint } from './compute.ts';
   import { picker, togglePicker } from './picker.svelte.ts';
 
@@ -74,6 +75,9 @@
     plot = (
       type === 'line' ? linePlot(host, { axes: true, area: true, id: `lg-${id}` }) : type === 'bars' ? barPlot(host) : heatPlot(host)
     ) as Plot<never>;
+    return watchSize(host, () => {
+      if (plot && !empty) plot.render(view.data as never);
+    });
   });
   // Draws whenever what it shows changes; a chart not shown can't be measured, so it waits
   $effect(() => {
@@ -164,6 +168,7 @@
   {style}
   style:--mc={tint[1]}
   aria-label="{metric.name} {TYPE_NAME[type]}"
+  use:flash={[`${S.a}:${S.b}:${pick.level}:${metric.id}`, `${head.num}|${head.meta}`]}
 >
   <div class="wtop">
     <Chip

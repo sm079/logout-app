@@ -4,9 +4,10 @@
   import type { Selection } from '../logic/calendar.ts';
   import type { DaySpan, Metric, Timeline } from '../logic/metrics.ts';
   import { MTINT } from '../logic/palette.ts';
+  import { flash } from '../ui/motion.ts';
   import Chip from './Chip.svelte';
   import Stat from './Stat.svelte';
-  import { linePlot, type LineData, type Plot } from './plots.ts';
+  import { linePlot, watchSize, type LineData, type Plot } from './plots.ts';
   import { headline, sparkView } from './compute.ts';
   import { picker, togglePicker } from './picker.svelte.ts';
 
@@ -30,6 +31,9 @@
 
   onMount(() => {
     plot = linePlot(host, { axes: false, area: true, id: `sp-${id}` });
+    return watchSize(host, () => {
+      if (plot && spark.pts.length && !head.none) plot.render(spark);
+    });
   });
   $effect(() => {
     const d = spark;
@@ -43,6 +47,7 @@
   {style}
   style:--mc={tint[1]}
   aria-label="{metric.name}: {head.num} {head.unit}. {head.meta}"
+  use:flash={[`${S.a}:${S.b}:${pick.level}:${metric.id}`, head.num]}
 >
   <Chip
     qual={head.qual}

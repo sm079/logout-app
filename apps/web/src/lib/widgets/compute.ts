@@ -264,6 +264,16 @@ export function sparkView(tl: Timeline, m: Metric, S: DaySpan, level: Selection[
 }
 
 /* ---------- Recovery ---------- */
+/** One day of the week behind the selection's end */
+export interface RecoveryDay {
+  /** Readiness, 0–100, or null with nothing to go on */
+  v: number | null;
+  state: MTintName;
+  /** The weekday's letter */
+  day: string;
+  /** Inside the selection */
+  on: boolean;
+}
 export interface RecoveryView {
   none: boolean;
   score: number;
@@ -273,8 +283,11 @@ export interface RecoveryView {
   hard: string;
   last: string;
   sleep: string;
+  week: RecoveryDay[];
   label: string;
 }
+const recState = (score: number): [string, MTintName] =>
+  score >= 67 ? ['Primed', 'good'] : score >= 34 ? ['Moderate', 'warn'] : ['Low', 'bad'];
 // Worked out from training: effort-weighted hard sets (volume when there's no effort) and cardio, fading over the
 // following days, against your usual, and nudged by the night's sleep check-in
 export function recoveryView(tl: Timeline, S: DaySpan): RecoveryView {
@@ -289,13 +302,17 @@ export function recoveryView(tl: Timeline, S: DaySpan): RecoveryView {
   const lastText = last < 0 ? '—' : S.b === last ? 'Today' : `${S.b - last}d ago`;
   const sl = S.single ? (s.sleep[S.b] ?? null) : tl.avgOf(s.sleep, S.a, S.b),
     slText = sl == null ? '—' : S.single ? String(sl) : sl.toFixed(1);
-  const state: [string, MTintName] = none
-    ? ['Nothing yet', 'none']
-    : score >= 67
-      ? ['Primed', 'good']
-      : score >= 34
-        ? ['Moderate', 'warn']
-        : ['Low', 'bad'];
+  const state: [string, MTintName] = none ? ['Nothing yet', 'none'] : recState(score);
+  const week: RecoveryDay[] = [];
+  for (let i = S.b - 6; i <= S.b; i++) {
+    const v = i < 0 ? null : (s.rec[i] ?? null);
+    week.push({
+      v: v == null ? null : Math.round(v),
+      state: v == null ? 'none' : recState(Math.round(v))[1],
+      day: fmt(tl.dateOf(i), { weekday: 'narrow' }),
+      on: i >= S.a
+    });
+  }
   return {
     none,
     score,
@@ -305,6 +322,7 @@ export function recoveryView(tl: Timeline, S: DaySpan): RecoveryView {
     hard: nf(hard),
     last: lastText,
     sleep: slText,
+    week,
     label: none
       ? 'Recovery: nothing to go on yet. Log a lift or a run.'
       : `Recovery ${score}%, ${state[0]}. ${nf(hard)} hard sets in the last 3 days, last session ${lastText.toLowerCase()}, sleep ${slText} out of 5`

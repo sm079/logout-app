@@ -84,3 +84,17 @@ export function rollNum(node: HTMLElement, text: string) {
     }
   };
 }
+
+/** `use:flash={[what, value]}`: replays the element's `flash` animation when its value changes while `what` it shows
+    stays the same, so a widget lights up as something is logged or synced in but not as the selection moves */
+export function flash(node: HTMLElement, [what, value]: [string, string]) {
+  let shown = what,
+    v = value;
+  return {
+    update([w, val]: [string, string]) {
+      if (w === shown && val !== v && !REDUCE) replay(node, 'flash');
+      shown = w;
+      v = val;
+    }
+  };
+}
