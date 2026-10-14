@@ -24,7 +24,8 @@
         <span>LogOut</span>
       </a>
       <nav class="s-nav" aria-label="Site">
-        <a href={resolve('/demo')} data-sveltekit-reload>Demo</a>
+        <a class="s-nav-link" href="{resolve('/(site)')}#how">How it works</a>
+        <a class="s-nav-link" href="{resolve('/(site)')}#faq">FAQ</a>
         <a class="s-cta small" href={resolve('/app')} data-sveltekit-reload>Open the app</a>
       </nav>
     </div>
@@ -39,36 +40,37 @@
           <img src="/mark.svg" alt="" width="26" height="20" />
           <span>LogOut</span>
         </a>
-        <p>A fitness log you type into.</p>
+        <p>A food and training log you type into.</p>
       </div>
       <nav class="s-foot-cols" aria-label="Footer">
         <div>
           <h2>Product</h2>
           <ul>
-            <li><a href={resolve('/app')} data-sveltekit-reload>Open the app</a></li>
+            <li><a href="{resolve('/(site)')}#how">How it works</a></li>
+            <li><a href="{resolve('/(site)')}#install">Install</a></li>
             <li><a href={resolve('/demo')} data-sveltekit-reload>Demo</a></li>
-            <li><a href="{resolve('/(site)')}#reads">What it reads</a></li>
+            <li><a href={resolve('/app')} data-sveltekit-reload>Open the app</a></li>
           </ul>
         </div>
         <div>
-          <h2>Get the app</h2>
+          <h2>Help</h2>
           <ul>
-            <li><a href={resolve('/app')} data-sveltekit-reload>iPhone</a></li>
-            <li><a href={resolve('/app')} data-sveltekit-reload>Android</a></li>
-            <li><a href={resolve('/app')} data-sveltekit-reload>Desktop</a></li>
+            <li><a href="{resolve('/(site)')}#faq">FAQ</a></li>
+            <li><a href="mailto:contact@logout.fit">Contact</a></li>
           </ul>
         </div>
         <div>
           <h2>Legal</h2>
           <ul>
             <li><a href={resolve('/(site)/privacy')}>Privacy</a></li>
+            <li><a href={resolve('/(site)/terms')}>Terms</a></li>
           </ul>
         </div>
       </nav>
     </div>
     <div class="s-foot-base">
       <span>© 2026 LogOut</span>
-      <span>Runs on your device. Works offline.</span>
+      <a href="mailto:contact@logout.fit">contact@logout.fit</a>
     </div>
     <div class="s-mark" aria-hidden="true">LogOut</div>
   </footer>

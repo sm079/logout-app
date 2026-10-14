@@ -1,3 +1,16 @@
+<script lang="ts">
+  import { resolve } from '$app/paths';
+
+  // Who handles what, for the table at the end
+  const SERVICES: [string, string, string][] = [
+    ['Supabase', 'Accounts and sync', 'South Korea'],
+    ['Resend', 'Sending sign-in codes', 'United States'],
+    ['Cloudflare', 'Serving the site and the app', 'Worldwide'],
+    ['PostHog', 'Usage counts', 'United States'],
+    ['Sentry', 'Error reports', 'United States']
+  ];
+</script>
+
 <svelte:head>
   <title>Privacy · LogOut</title>
   <meta name="description" content="What LogOut keeps, where, and what it sends." />
@@ -5,57 +18,95 @@
 
 <main class="s-doc">
   <h1>Privacy</h1>
-  <p class="s-small">Last updated October 12, 2026</p>
+  <p class="s-small">Last updated October 14, 2026</p>
 
-  <p>
-    LogOut is a fitness log you type into. This page says what it keeps, where it keeps it, and what it sends anywhere else. The short
-    version: your log stays on your device unless you sign in to sync it, and nothing reads your entries but the app on your own device.
-  </p>
+  <div class="s-tldr">
+    <h2>The short version</h2>
+    <ul>
+      <li>Your log is yours. Without an account, it never leaves your device.</li>
+      <li>If you sign in, we store it so your devices can sync. We don’t read it, sell it or show ads.</li>
+      <li>We count how the site and app are used, and collect error reports. Never what you type.</li>
+      <li>You can export or delete everything at any time.</li>
+    </ul>
+  </div>
 
-  <h2>On your device</h2>
+  <h2>Who we are</h2>
   <p>
-    What you type (your entries), the names you give items, your profile (goals, sex and height if you add them, units) and your widget
-    choices are stored in your browser’s storage on this device. All reading and adding up happens on the device. Without an account, none
-    of it leaves the device.
-  </p>
-
-  <h2>If you sign in to sync</h2>
-  <p>
-    Signing in uses your email address: we send a one-time code to it. Once signed in, your entries, item names, profile and widget choices
-    are stored on our server so your other devices can get them. The server stores your text as you typed it and does not read, analyse or
-    share it. Data is held with our database and authentication provider (Supabase) in South Korea (Seoul).
-  </p>
-  <p>
-    Signing out removes your log from that device; it stays in your account. To delete your account and everything stored with it, use
-    Delete account in the profile, or contact us.
+    LogOut (“we”) is an independent app. For anything about this page or your data, write to
+    <a href="mailto:contact@logout.fit">contact@logout.fit</a>.
   </p>
 
-  <h2>Usage and errors</h2>
+  <h2>What stays on your device</h2>
   <p>
-    To improve the app we may collect anonymous usage events (for example that a screen was opened or an entry was logged, never what it
-    said), counted by PostHog, and reports of errors the app runs into, which go to Sentry. Neither includes the text of your entries. If
-    you turn on “Help improve reading” in your profile, lines that the app couldn’t read are sent with item names and notes removed, so we
-    can teach it to read them.
+    What you log, the names you give items, your profile (goals, units, and your sex, height and weight if you add them) and your widget
+    choices are kept in your browser’s storage. Reading your lines and adding up your day happen on your device. Without an account, none of
+    it leaves the device.
   </p>
 
-  <h2>Hosting</h2>
+  <h2>If you sign in</h2>
   <p>
-    The site and the app are served by Cloudflare, and error reports pass through it on their way to Sentry. Like any web host, it sees the
-    network address each request comes from. It gets none of your log.
+    Signing in uses your email address: we send a one-time code to it. Once you’re signed in, your log, item names, profile and widget
+    choices are stored with your account so your other devices can get them. They’re stored as you typed them, and we don’t read, analyse or
+    share them.
   </p>
+  <p>
+    Signing out removes your log from that device; it stays in your account. Deleting your account (in the profile) removes your log and
+    your email address from our database.
+  </p>
+
+  <h2>What we collect to run and improve LogOut</h2>
+  <p>
+    <strong>Usage counts.</strong> We count visits to the site and events in the app, such as a screen being opened or an entry being logged.
+    These record what kind of thing happened, never what an entry says. They’re tied to a random ID, and to your account ID once you sign in,
+    not to your email. There’s no session recording and no tracking across other sites.
+  </p>
+  <p>
+    <strong>Error reports.</strong> When something breaks, we get a report of what failed, your browser and the app version. Reports don’t include
+    what you’ve logged.
+  </p>
+  <p>
+    <strong>Help improve reading.</strong> Off unless you turn it on in your profile. When it’s on, lines the app couldn’t read are sent to us
+    with item names and notes removed, so we can teach it to read them.
+  </p>
+  <p>Like any website, our host sees the network address each request comes from.</p>
 
   <h2>What we don’t do</h2>
   <p>
-    We don’t sell your data, show ads, or share your log with anyone. There are no third-party trackers in the app beyond the ones named
-    above.
+    We don’t sell your data, show ads, or share your log with anyone. Your entries are never sent to an AI service. There are no trackers
+    beyond the services listed below.
   </p>
 
-  <h2>Your data</h2>
+  <h2>How long we keep it</h2>
   <p>
-    Export gives you everything as one file at any time, from the profile. Import brings a file back. Clear entries deletes everything
-    you’ve logged on the device.
+    Your account and log are kept until you delete your account. Usage counts are kept for up to a year and error reports for up to 90 days.
   </p>
+
+  <h2>Your choices</h2>
+  <p>
+    From the profile, Export gives you your whole log as one file at any time, Import brings a file back, and Clear entries deletes
+    everything logged on that device. You can use LogOut without an account at all. You can also ask us for a copy of your data, or for it
+    to be deleted, at <a href="mailto:contact@logout.fit">contact@logout.fit</a>.
+  </p>
+
+  <h2>Children</h2>
+  <p>LogOut isn’t for children under 13. If we learn that someone under 13 has an account, we’ll delete it.</p>
+
+  <h2>Services we use</h2>
+  <p>These handle data for us, only for the purposes below. Your data may be processed in a country other than your own.</p>
+  <div class="s-table">
+    <table>
+      <thead><tr><th>Service</th><th>What for</th><th>Where</th></tr></thead>
+      <tbody>
+        {#each SERVICES as [name, what, where] (name)}
+          <tr><td>{name}</td><td>{what}</td><td>{where}</td></tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 
   <h2>Changes</h2>
-  <p>If this page changes in a way that matters, the app will say so before the change applies.</p>
+  <p>
+    If this page changes in a way that matters, the app will say so before the change applies. See also the
+    <a href={resolve('/(site)/terms')}>terms</a>.
+  </p>
 </main>

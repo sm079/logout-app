@@ -1,6 +1,6 @@
 /* The app's main flows in a real browser: the first-run setup, logging, editing and deleting, values stated once,
-   the log on a phone, every widget at once on a wide screen, the profile, the demo, the landing page's phone, and
-   opening with no network. */
+   the log on a phone, every widget at once on a wide screen, the profile, the demo, the landing page's phone, the site's
+   pages, and opening with no network. */
 import { expect, test, type Page } from '@playwright/test';
 
 /** Opens the app fresh and skips the first-run setup */
@@ -230,7 +230,7 @@ test("the landing page's phone types on its own, then reads what a visitor types
   await page.goto('/');
   const phone = page.locator('.s-phone');
   // Its own first line, read as it's typed
-  await expect(phone.locator('.mirror .ro')).toHaveText('2,500 kg', { timeout: 10000 });
+  await expect(phone.locator('.mirror .ro')).toHaveText('330 kcal', { timeout: 10000 });
   const field = page.getByLabel('Type a line to see how LogOut reads it');
   await field.click();
   await expect(field).toHaveValue('');
@@ -240,6 +240,21 @@ test("the landing page's phone types on its own, then reads what a visitor types
   // LOG keeps nothing: the field just clears
   await phone.getByRole('button', { name: /^Log it/ }).click();
   await expect(field).toHaveValue('');
+});
+
+test('the site: every footer link goes somewhere of its own, and the legal pages open', async ({ page }) => {
+  await page.goto('/');
+  const foot = page.getByRole('navigation', { name: 'Footer' });
+  const hrefs = await foot.getByRole('link').evaluateAll(as => as.map(a => a.getAttribute('href')));
+  expect(new Set(hrefs).size).toBe(hrefs.length);
+  for (const id of ['how', 'install', 'faq']) await expect(page.locator(`#${id}`)).toBeVisible();
+  await page.getByText('Does it use AI?').click();
+  await expect(page.getByText('plain rules that run on your device')).toBeVisible();
+  await foot.getByRole('link', { name: 'Privacy' }).click();
+  await expect(page.getByRole('heading', { name: 'Privacy', level: 1 })).toBeVisible();
+  await expect(page.getByRole('table')).toContainText('Supabase');
+  await page.getByRole('navigation', { name: 'Footer' }).getByRole('link', { name: 'Terms' }).click();
+  await expect(page.getByRole('heading', { name: 'Terms', level: 1 })).toBeVisible();
 });
 
 test('the app opens with no network once it has been loaded', async ({ page, context, browserName }) => {
