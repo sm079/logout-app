@@ -199,7 +199,7 @@
       {#if overflow.length}
         <p class="ro-more" aria-hidden="true">
           {#each overflow as o, i (i)}<span class:needs={o.needs}
-              >{#if o.name}<i>{o.name}</i>{/if}{o.text}</span
+              >{#if o.name}<i style:--n="{o.name.length}ch">{o.name}</i>{/if}<b>{o.text}</b></span
             >{/each}
         </p>
       {/if}
