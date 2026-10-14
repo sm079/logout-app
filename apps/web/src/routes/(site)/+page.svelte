@@ -102,12 +102,12 @@
   <title>LogOut · a food and training log you type into</title>
   <meta
     name="description"
-    content="Log meals, workouts and sleep the way you'd say it. LogOut reads every line as you type and adds up your day. Free, no account needed."
+    content="Log meals, workouts and cardio the way you'd say it. LogOut reads every line as you type and adds up your day. Free, no account needed."
   />
   <meta property="og:title" content="LogOut · a food and training log you type into" />
   <meta
     property="og:description"
-    content="Log meals, workouts and sleep the way you'd say it. LogOut reads every line as you type and adds up your day."
+    content="Log meals, workouts and cardio the way you'd say it. LogOut reads every line as you type and adds up your day."
   />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://logout.fit/" />
@@ -120,7 +120,7 @@
 <main>
   <section class="s-hero">
     <div class="s-aura" aria-hidden="true"></div>
-    <p class="s-pill s-in" style="--d:0"><i></i>Food · Workouts · Sleep</p>
+    <p class="s-pill s-in" style="--d:0"><i></i>Food · Workouts · Cardio</p>
     <h1 class="s-title">
       {#each TITLE as w, i (i)}<span class="s-w" style="--d:{90 + i * 70}">{w}</span>{GAP}{/each}
     </h1>
