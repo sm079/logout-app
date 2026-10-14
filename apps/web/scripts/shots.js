@@ -1,4 +1,5 @@
-/* Takes the landing page's screenshots, as WebP in static/shots, and its link preview, static/og.png. Run against a production build:
+/* Takes the landing page's screenshots, as WebP in static/shots, its link preview, static/og.png, and the README's
+   phone screenshot, docs/phone.webp at the repository root. Run against a production build:
 
      pnpm build && pnpm preview --port 4173
      node scripts/shots.js [base URL]
@@ -10,12 +11,14 @@ import { chromium, devices } from '@playwright/test';
 
 const BASE = process.argv[2] ?? 'http://localhost:4173';
 const OUT = resolve(import.meta.dirname, '../static/shots');
+const DOCS = resolve(import.meta.dirname, '../../../docs');
 const PHONE = { ...devices['Pixel 7'], reducedMotion: 'reduce' };
 const DESK = { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, reducedMotion: 'reduce' };
 const FIELD = "What you did, as you'd say it";
 
 const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
 mkdirSync(OUT, { recursive: true });
+mkdirSync(DOCS, { recursive: true });
 
 /** The demo, settled, with its bar hidden */
 async function demo(opts) {
@@ -47,7 +50,7 @@ async function type(page, mode, text) {
   await page.waitForTimeout(800);
 }
 /** Saves a PNG screenshot as WebP, encoded by the browser itself */
-async function save(page, png, name) {
+async function save(page, png, name, dir = OUT) {
   const url = await page.evaluate(
     async src => {
       const img = new Image();
@@ -59,7 +62,7 @@ async function save(page, png, name) {
     },
     `data:image/png;base64,${png.toString('base64')}`
   );
-  writeFileSync(`${OUT}/${name}.webp`, Buffer.from(url.split(',')[1], 'base64'));
+  writeFileSync(`${dir}/${name}.webp`, Buffer.from(url.split(',')[1], 'base64'));
   console.log(`${name}.webp`);
 }
 
@@ -92,6 +95,19 @@ const shots = [
     await page.addStyleTag({ content: '.toast { display: none !important; }' });
     await page.waitForTimeout(800);
     await save(page, await visible(page, '.wscroll'), 'training');
+  },
+  async () => {
+    // The README's: the whole phone screen, two lifts logged and a third being typed
+    const page = await demo(PHONE);
+    for (const line of ['squat 5x5 100kg @8', 'bench press 4x8 70kg @8']) {
+      await type(page, 'Strength', line);
+      await page.locator('.actions button.log').click();
+      await page.waitForTimeout(600);
+    }
+    await page.addStyleTag({ content: '.toast { display: none !important; }' });
+    await type(page, 'Strength', 'pull-ups 4x8 +10kg @8');
+    await page.waitForTimeout(400);
+    await save(page, await page.screenshot(), 'phone', DOCS);
   },
   async () => {
     const page = await demo(DESK);
