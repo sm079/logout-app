@@ -678,7 +678,7 @@ html:has(.s-page) {
   user-select: none;
 }
 
-/* ---------- A plain document: privacy ---------- */
+/* ---------- A plain document: privacy, terms ---------- */
 .s-doc {
   max-width: 680px !important;
   padding: 40px 0;
@@ -705,4 +705,66 @@ html:has(.s-page) {
   border-radius: 6px;
   background: var(--chip);
   color: var(--fg);
+}
+.s-doc a {
+  color: var(--fg);
+  text-underline-offset: 3px;
+  text-decoration-color: var(--lime-line);
+}
+.s-doc strong {
+  color: var(--fg);
+  font-weight: 650;
+}
+/* The short version, boxed at the top */
+.s-tldr {
+  margin: 28px 0 8px;
+  padding: 22px 24px 8px;
+  border-radius: 22px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+}
+.s-doc .s-tldr h2 {
+  margin: 0 0 6px;
+}
+.s-tldr ul {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: #c9cad0;
+}
+.s-tldr li {
+  margin-bottom: 10px;
+}
+.s-tldr li::marker {
+  color: var(--lime);
+}
+.s-table {
+  overflow-x: auto;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+}
+.s-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+.s-table th,
+.s-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.s-table tr:last-child td {
+  border-bottom: 0;
+}
+.s-table th {
+  font: 500 11.5px var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: var(--dock);
+}
+.s-table td {
+  color: #c9cad0;
 }
