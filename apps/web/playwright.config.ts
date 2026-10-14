@@ -10,7 +10,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   reporter: [['list']],
-  use: { baseURL: `http://localhost:${PORT}`, trace: 'retain-on-failure', ...browser },
+  // First-run units are guessed from the time zone, so one is pinned (London: kilograms and kilometres) and the
+  // results don't depend on the machine running the tests
+  use: { baseURL: `http://localhost:${PORT}`, trace: 'retain-on-failure', timezoneId: 'Europe/London', ...browser },
   webServer: {
     command: `npx vite build && npx vite preview --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/app`,
