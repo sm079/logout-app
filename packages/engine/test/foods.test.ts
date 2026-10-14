@@ -151,6 +151,42 @@ describe('suggestions', () => {
     expect(E.suggest(empty, 'food', 'banan', 6).map(s => s.name)).toContain('banana');
   });
 
+  describe('ranking', () => {
+    const top = (q: string, n = 6) => E.foodsLike(foods, q, n);
+    const descs = (q: string, n = 6) => top(q, n).map(f => f.desc);
+
+    test('a whole word beats one it only starts', () => {
+      for (const [q, not] of [
+        ['rice', /^Ricebean/],
+        ['egg', /^Egg(nog|plant)/],
+        ['bread', /^Breadfruit/],
+        ['apple', /APPLEBEE/]
+      ] as const)
+        for (const d of [...descs(q), ...descs(`${q} `)]) expect(d, q).not.toMatch(not);
+    });
+
+    test('the food itself comes before dishes made with it', () => {
+      expect(descs('rice', 4)).toEqual(['Boiled rice (Uble chawal)', 'Rice, raw, brown', 'Rice, raw, milled', 'Rice, parboiled, milled']);
+      expect(descs('milk', 4).every(d => /^Milk,/.test(d))).toBe(true);
+      expect(descs('coffee', 4).every(d => /^Beverages, coffee,/.test(d))).toBe(true);
+      expect(descs('cheese', 6).every(d => /^Cheese, \w+$/.test(d))).toBe(true);
+    });
+
+    test('plain forms come before products and brands, unless the product is typed', () => {
+      const greek = descs('greek yogurt', 3);
+      expect(greek.every(d => /plain/.test(d) && !/CHOBANI|OIKOS/.test(d))).toBe(true);
+      for (const d of descs('chicken breast')) expect(d).not.toMatch(/deli|roll|flour|batter|breaded/);
+      expect(descs('chicken breast deli', 1)[0]).toMatch(/deli/);
+    });
+
+    test('a half-typed word is the word most entries have, unless it’s a word itself', () => {
+      expect(top('chick').every(f => f.name.startsWith('chicken'))).toBe(true);
+      expect(top('chicken bre').every(f => f.name.includes('breast'))).toBe(true);
+      expect(top('pea', 3).every(f => f.name.split(' ').includes('pea'))).toBe(true);
+      expect(top('roti', 1)[0]!.name).toBe('chapati');
+    });
+  });
+
   test('logged foods come first, an entry already logged isn’t suggested again, other modes get none', () => {
     const b = book('banana 120g');
     const list = E.suggest(b, 'food', 'banana', 6);

@@ -198,7 +198,7 @@ test('a food the tables know reads without values; a vague name suggests their e
   await rows(page).first().locator('[data-item]').first().click();
   const sheet = page.getByRole('dialog');
   await expect(sheet).toContainText('per 100 g');
-  await expect(sheet).toContainText(/USDA: Chicken.*breast/i);
+  await expect(sheet).toContainText(/(USDA|INDB|IFCT 2017): Chicken.*breast/i);
 });
 
 test('a wide screen shows the log on the left, then every widget at once under a one-row calendar', async ({ page }) => {

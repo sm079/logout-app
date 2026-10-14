@@ -38,6 +38,8 @@ export interface Foods {
   /** Every word, to find the ones a half-typed word starts */
   vocab: string[];
   memo: Map<string, Food | null>;
+  /** Each entry's description taken apart for ranking suggestions, worked out when first needed */
+  shapes: (Shape | undefined)[];
 }
 
 /* ---------- Words ---------- */
@@ -132,7 +134,7 @@ export function foodTable(data: FoodData): Foods {
       else post.set(w, [i]);
     }
   });
-  return { list, words, exact, post, vocab: [...post.keys()].sort(), memo: new Map() };
+  return { list, words, exact, post, vocab: [...post.keys()].sort(), memo: new Map(), shapes: [] };
 }
 
 /** Entries that have every one of the words, at most `limit` */
@@ -170,8 +172,81 @@ export function foodOf(foods: Foods | null | undefined, key: string | null | und
   return hit;
 }
 
-/** Entries with every typed word, the last one as far as it's typed, best first: the one the words name, then
-    those whose description starts with the first word, then the shortest names */
+/* ---------- Ranking suggestions ---------- */
+// Words that say how a plain food is had rather than which food it is: they don't count against an entry
+const PLAIN = new Set(['raw', 'cooked', 'boiled', 'roasted', 'plain', 'whole', 'fresh', 'enriched', 'unenriched', 'fluid']);
+// Words that mark a processed or prepared product, unless they were typed (a brand in capitals counts too)
+const MADE = new Set([
+  'deli',
+  'breaded',
+  'batter',
+  'roll',
+  'canned',
+  'sweetened',
+  'frozen',
+  'prepackaged',
+  'imitation',
+  'meatless',
+  'restaurant',
+  'fast'
+]);
+// Description heads that only say what kind of food follows: `Cheese, brie` is brie, `Beverages, coffee` coffee
+const CLASS = new Set(['nut', 'seed', 'spice', 'fish', 'cheese', 'beverage', 'cereal']);
+
+interface Shape {
+  /** Its description's words, without what's in brackets; and with words a hyphen joins as one (`long-grain`) */
+  all: string[];
+  joined: string[];
+  /** The words of its description's first part, and of the next when the first is a class word (`Cheese, brie`) */
+  first: string[];
+  next: string[] | null;
+  kind: string | null;
+  /** Its plain forms' words */
+  forms: string[][];
+  /** Brands: words in capitals */
+  caps: string[];
+  name: string[];
+  length: number;
+}
+
+function shapeOf(e: Food): Shape {
+  const desc = e.desc.replace(/\([^)]*\)/g, ' '),
+    parts = desc.split(','),
+    first = foodWords(parts[0] as string),
+    kind = parts.length > 1 && first.length === 1 && CLASS.has(first[0] as string) ? (first[0] as string) : null;
+  return {
+    all: foodWords(desc),
+    joined: foodWords(desc.replace(/(?<=\p{L})-(?=\p{L})/gu, '')),
+    first,
+    next: kind ? foodWords(parts[1] as string) : null,
+    kind,
+    forms: e.forms.map(foodWords),
+    caps: [...desc.matchAll(/\b[A-Z][A-Z'&.-]*[A-Z]\b/g)].map(m => foodWords(m[0])[0] as string),
+    name: e.name.split(' '),
+    length: desc.length
+  };
+}
+
+/** How well an entry fits the typed words (which it has), as numbers to sort by, lowest best */
+function fit(s: Shape, typed: string[], whole: boolean): number[] {
+  const t = new Set(typed),
+    // `Cheese, brie` is brie, unless `cheese` was typed
+    first = s.next && !t.has(s.kind as string) ? s.next : s.first;
+  // 0: its first part, or a plain form, is the typed words and plain ones (`Rice, raw`, `Boiled rice`); 1: it starts
+  // with a typed word (`Rice upma`); 2: neither (`Lemon rice`)
+  const head = [first, ...s.forms].some(ws => ws.length && ws.every(w => t.has(w) || PLAIN.has(w))) ? 0 : t.has(first[0] as string) ? 1 : 2;
+  const made = s.all.some(w => MADE.has(w) && !t.has(w)) || s.caps.some(w => !t.has(w));
+  // Words it adds to the typed ones, other than plain ones and its class word, in the fewest it's described in
+  let extra = 99;
+  for (const ws of [s.joined, s.all, ...s.forms])
+    if (typed.every(w => ws.includes(w))) extra = Math.min(extra, ws.filter(w => !t.has(w) && !PLAIN.has(w) && w !== s.kind).length);
+  return [whole ? 0 : 1, head, made ? 1 : 0, extra, typed.every(w => s.name.includes(w)) ? 0 : 1, s.name.length, s.length];
+}
+
+/** Entries with every typed word, the last one as far as it's typed, best first: the one the words name; then
+    those with every word whole (not `ricebean` for `rice`); that are the typed food, not a dish of it (`rice, raw`,
+    not `rice upma`); that aren't a product (canned, breaded, a brand); that add the fewest words besides plain ones
+    (raw, cooked, plain, whole); whose short name has the typed words; then the shortest names */
 export function foodsLike(foods: Foods | null | undefined, query: string, n: number, skip?: (f: Food) => boolean): Food[] {
   if (!foods || n <= 0) return [];
   const q = query.toLowerCase().replace(/^\s+/, '');
@@ -180,6 +255,8 @@ export function foodsLike(foods: Foods | null | undefined, query: string, n: num
   const ws = foodWords(q);
   if (!ws.length) return [];
   let rows: number[];
+  // The typed words as an entry has them, and whether they're the words meant
+  let typedOf = (_: number): [string[], boolean] => [ws, true];
   if (done) rows = having(foods, ws);
   else {
     // The last word is still being typed: any word it starts (or the word itself, made singular)
@@ -197,14 +274,25 @@ export function foodsLike(foods: Foods | null | undefined, query: string, n: num
       for (const i of foods.post.get(w) ?? []) seen.add(i);
     }
     rows = [...seen].filter(i => whole.every(w => (foods.words[i] as Set<string>).has(w)));
+    // The word it's taken to be, by how many of these entries' short names have it: the word as typed, unless one it
+    // starts is in ten times as many (`pea` stays `pea`, not `peanut`; `chick` is `chicken`); else the one most have
+    const count = new Map<string, number>();
+    for (const i of rows)
+      for (const w of (foods.list[i] as Food).name.split(' '))
+        if (w.startsWith(raw) || w.startsWith(one)) count.set(w, (count.get(w) ?? 0) + 1);
+    let meant = one,
+      most = 0;
+    for (const [w, c] of count) if (c > most || (c === most && w.length < meant.length)) [meant, most] = [w, c];
+    if (foods.post.has(one) && (count.get(one) ?? 0) * 10 >= most) meant = one;
+    typedOf = i => {
+      const own = foods.words[i] as Set<string>;
+      if (own.has(meant)) return [[...whole, meant], true];
+      const starts = [...own].filter(w => w.startsWith(raw) || w.startsWith(one)).sort((a, b) => a.length - b.length);
+      return [[...whole, starts[0] ?? one], false];
+    };
   }
   const exact = foods.exact.get(wordsKey(ws));
-  const first = ws[0] as string;
-  const rank = (i: number) => {
-    const e = foods.list[i] as Food,
-      head = foodWords(e.desc)[0] ?? '';
-    return [i === exact ? 0 : 1, head.startsWith(first) ? 0 : 1, e.name.split(' ').length, e.desc.length];
-  };
+  const rank = (i: number) => [i === exact ? 0 : 1, ...fit((foods.shapes[i] ??= shapeOf(foods.list[i] as Food)), ...typedOf(i))];
   const ranked = rows
     .filter(i => !skip || !skip(foods.list[i] as Food))
     .map(i => ({ i, r: rank(i) }))
