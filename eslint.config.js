@@ -13,7 +13,6 @@ export default ts.config(
       '**/.svelte-kit/',
       '**/.wrangler/',
       '**/coverage/',
-      '**/test/legacy/',
       'apps/web/static/',
       'supabase/.temp/'
     ]

@@ -4,8 +4,6 @@ dist/
 build/
 .svelte-kit/
 coverage/
-packages/engine/test/legacy/
-packages/sample/test/legacy/
 apps/web/static/
 supabase/.temp/
 supabase/templates/
