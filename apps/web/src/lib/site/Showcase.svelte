@@ -19,10 +19,10 @@
 
   // What it types, in turn. `take` is how much of the name is typed before its completion is taken
   const SCRIPT: { text: string; take?: number }[] = [
+    { text: 'chicken breast 200g 330kcal 62p', take: 5 },
+    { text: 'water 500ml' },
     { text: 'squat 5x5 100kg @8' },
-    { text: 'bench press 3x8 60kg', take: 3 },
-    { text: 'easy run 8km 46:30 145bpm', take: 4 },
-    { text: 'chicken breast 200g 330kcal 62p', take: 5 }
+    { text: 'easy run 8km 46:30 145bpm', take: 4 }
   ];
   const UNITS = { load: 'kg', dist: 'km' } as const;
   // How long the field sits empty after the visitor leaves it before it types on its own again

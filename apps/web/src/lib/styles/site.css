@@ -76,6 +76,11 @@ html:has(.s-page) {
 .s-nav a:not(.s-cta):hover {
   color: var(--fg);
 }
+@media (max-width: 520px) {
+  .s-nav-link {
+    display: none;
+  }
+}
 
 /* ---------- Buttons: the lime one is the LOG button ---------- */
 .s-cta {
@@ -302,10 +307,27 @@ html:has(.s-page) {
 }
 
 /* ---------- The phone: the bottom of the app's screen in a frame, cut off above the widgets ---------- */
+/* The way in that isn't signing up: a plain link under the button */
+.s-quiet {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--muted) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+  transition:
+    color 0.2s,
+    text-decoration-color 0.2s;
+}
+.s-quiet:hover {
+  color: var(--fg) !important;
+  text-decoration-color: var(--lime-line);
+}
+
 .s-stage {
   position: relative;
   width: 100%;
-  margin-top: 56px;
+  margin-top: 44px;
   display: flex;
   justify-content: center;
 }
@@ -477,6 +499,7 @@ html:has(.s-page) {
   text-align: center;
 }
 .s-reads h2,
+.s-sec-head h2,
 .s-end h2 {
   text-wrap: balance;
   margin: 0;
@@ -543,10 +566,228 @@ html:has(.s-page) {
   color: var(--muted);
 }
 
+/* ---------- Sections: how it works, features, install, questions ---------- */
+.s-sec {
+  padding: 96px 0 0;
+}
+@media (min-width: 760px) {
+  .s-sec {
+    padding-top: 136px;
+  }
+}
+.s-sec-head {
+  max-width: 640px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+.s-sec-head > p:last-child:not(.s-eyebrow) {
+  text-wrap: balance;
+  margin: 18px auto 0;
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.s-eyebrow {
+  margin: 0 0 14px;
+  font: 500 12px var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lime-soft);
+}
+.s-note {
+  margin: 28px 0 0;
+  text-align: center;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+.s-note a {
+  color: var(--fg);
+  text-underline-offset: 4px;
+  text-decoration-color: var(--lime-line);
+}
+
+/* A row of cards: the steps, and where to install */
+.s-steps,
+.s-install {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 760px) {
+  .s-steps,
+  .s-install {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.s-steps li,
+.s-install li {
+  display: flex;
+  flex-direction: column;
+  padding: 26px 26px 28px;
+  border-radius: 28px;
+  background: var(--dock);
+  border: 1px solid var(--line);
+}
+.s-steps h3,
+.s-install h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.s-steps p,
+.s-install p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.s-step-n {
+  margin-bottom: 22px;
+  font: 500 12px var(--mono);
+  color: var(--dim);
+}
+.s-steps code {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--screen);
+  border: 1px solid var(--line);
+  font: 500 13px var(--mono);
+  color: var(--lime);
+}
+.s-steps p {
+  margin-bottom: 22px;
+}
+
+/* A feature: words on one side, the app on the other */
+.s-feat {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+.s-feat + .s-feat {
+  margin-top: 96px;
+}
+@media (min-width: 900px) {
+  .s-feat {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 72px;
+  }
+  .s-feat + .s-feat {
+    margin-top: 128px;
+  }
+  .s-feat.flip .s-feat-text {
+    order: 2;
+  }
+  .s-feat.wide {
+    grid-template-columns: none;
+    gap: 44px;
+  }
+}
+.s-feat-text h2 {
+  text-wrap: balance;
+  margin: 0;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.08;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+.s-feat-text > p:last-child {
+  margin: 18px 0 0;
+  max-width: 30em;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.s-feat.wide .s-feat-text {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+.s-feat.wide .s-feat-text > p:last-child {
+  margin-inline: auto;
+}
+.s-shot {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 500px);
+  margin: 0;
+  padding: 10px;
+  border-radius: 34px;
+  background: var(--screen);
+  border: 1px solid var(--line);
+  box-shadow: 0 40px 80px -40px #000;
+}
+.s-feat.wide .s-shot {
+  width: 100%;
+  border-radius: 26px;
+}
+.s-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 25px;
+}
+.s-feat.wide .s-shot img {
+  border-radius: 17px;
+}
+
+/* Questions: each opens in place */
+.s-faq {
+  max-width: 760px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+}
+.s-faq details {
+  border-bottom: 1px solid var(--line);
+}
+.s-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 2px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.s-faq summary::-webkit-details-marker {
+  display: none;
+}
+.s-faq summary::after {
+  content: '+';
+  flex: none;
+  font: 400 22px/1 var(--mono);
+  color: var(--dim);
+  transition:
+    rotate 0.3s var(--spring),
+    color 0.2s;
+}
+.s-faq details[open] summary::after {
+  rotate: 45deg;
+  color: var(--lime);
+}
+.s-faq summary:hover::after {
+  color: var(--fg);
+}
+.s-faq details p {
+  margin: -4px 0 0;
+  padding: 0 40px 24px 2px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
 /* ---------- Closing call ---------- */
 .s-end {
   position: relative;
-  margin-top: 120px;
+  margin-top: 136px;
   padding: 88px 24px 64px;
   border-radius: 36px;
   background: linear-gradient(180deg, var(--dock), var(--screen));
@@ -575,27 +816,10 @@ html:has(.s-page) {
 .s-end .s-ctas {
   margin-top: 32px;
 }
-.s-facts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px 28px;
-  margin: 44px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 13.5px;
-  font-weight: 550;
+.s-end-sub {
+  margin: 26px 0 0;
+  font-size: 14px;
   color: var(--muted);
-}
-.s-facts li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.s-facts .i {
-  width: 16px;
-  height: 16px;
-  color: var(--lime-soft);
 }
 
 /* ---------- Footer ---------- */
